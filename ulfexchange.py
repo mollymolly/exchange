@@ -969,7 +969,7 @@ def analyzeFilesTogether(arguments, backgroundNames = None):
             data = analyzeDataSet(cordName, redName, greenName, resultsName,\
             covertedCenter, convertedRadius, FileNumber, dataDirectory, bgName,\
             bleachingFile)
-        except missingFileError as fName:
+        except _missingFileError as fName:
             unProcessedFiles.append(fName)   
         except imageShapeDiscrepencyError as imageNamges:
             shapeDiscrepencenyFiles.append(imageNamges)       
