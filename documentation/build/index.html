@@ -1,0 +1,503 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ulfexchange - Functions for analyzing confocal images of photoconvertible vimentin Y117L &mdash; ulfexchange 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="ulfexchange 0.0.1 documentation" href="#" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">ulfexchange 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ulfexchange-functions-for-analyzing-confocal-images-of-photoconvertible-vimentin-y117l">
+<h1>ulfexchange - Functions for analyzing confocal images of photoconvertible vimentin <sup>Y117L</sup><a class="headerlink" href="#ulfexchange-functions-for-analyzing-confocal-images-of-photoconvertible-vimentin-y117l" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<span class="target" id="module-ulfexchange"></span><div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This module analyzes intensity changes in confocal images of cells expressing 
+mEos-vimentin <sup>Y117L</sup> as described in PAPER NAME GOES HERE.</p>
+<p>The experiments described by Robert <em>et al.</em> use a photoconvertible fluorophore
+(mEos3.2) to track the behavior of a mutant of the vimentin protein 
+(vimentin <sup>Y117L</sup>) that forms oligomers known as unit length 
+filaments (ULFs). Fluorescently labeled ULFs are visible as bright particles 
+in cells. The fluorophore mEos converts from green to red when exposed to UV 
+light. To observe how mEos-vimentin <sup>Y117L</sup> is incorporated into 
+ULFs we photoconverted one region of the cell and observed fluorescence 
+accumulate in the ULFs elsewhere in the cell. This analysis software measures 
+the change in intensity in ULFs.</p>
+</div>
+<div class="section" id="work-flow">
+<h2>Work Flow<a class="headerlink" href="#work-flow" title="Permalink to this headline">¶</a></h2>
+<p>Robert <em>et al.</em> used ulfexchange.py to analyze confocal images of confocal images
+of cells expressing mEos-vimentin <sup>Y117L</sup> with the following steps:</p>
+<p>1. <strong>Bleach correction</strong>: Red channel images were bleach corrected by scaling 
+each image so that its mean was the same as the first image.
+2. <strong>ULF intensity calculation</strong>: Coordinates of the center of each ULF in each 
+frame (obtained separately using the green channel) were used to measure the 
+intensity of each ULF in each red frame by calculating the average fluorescence 
+in a circle of fixed size centered at these coordinates.
+3. <strong>Background subtraction</strong>: The intensity of each ULF before conversion was 
+subtracted from all its post-conversion intensities.
+4. <strong>Normalization between data sets</strong>: ULF intensities were normalized by 
+dividing by the background subtracted intensity in the photoconverted region.
+5. <strong>Numerical and graphical results</strong> Slope calculations, plotting, values 
+written file, etc.</p>
+<p>The function analyzeDataSet implements the workflow described above. Further 
+details of the analysis are included in Robert <em>et. al.</em></p>
+</div>
+<div class="section" id="required-inputs">
+<h2>Required inputs<a class="headerlink" href="#required-inputs" title="Permalink to this headline">¶</a></h2>
+<p>This analysis takes as input four files:</p>
+<ol class="arabic simple">
+<li>A TIFF file containing a time series of red channel images of the 
+mEos-vimentin <sup>Y117L</sup> cells after photo conversion.</li>
+<li>A TIFF file with a times series green channel images corresponding to the 
+first tiff file.</li>
+<li>A TIFF file with a single red channel image of the same cell before photo 
+conversion for determining the background fluorescence.</li>
+<li>A text file containing the coordinates for the ULFs of interest in each 
+frame. For the work described in Robert <em>et al.</em> 
+<a class="reference external" href="http://diatrack.org/">Diatrack</a>was used to obtain these coordinates.</li>
+</ol>
+</div>
+<div class="section" id="naming-convention-for-batch-processing">
+<h2>Naming convention for batch processing<a class="headerlink" href="#naming-convention-for-batch-processing" title="Permalink to this headline">¶</a></h2>
+<p>The function runBatch performs a complete 5-step analysis on multiple sets of 
+data. Each data file described above needs to be named with the following 
+convention:</p>
+<ol class="arabic simple">
+<li>rootname + red + number + .tif</li>
+<li>rootname + green + number + .tif</li>
+<li>rootname + before + number + .tif</li>
+<li>rootname + .txt</li>
+</ol>
+<p>Where rootname is a name that is the same for all files in the batch and number
+is unique.</p>
+<p>For example if rootname is control the following files are an allowed data set:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="12%" />
+<col width="36%" />
+<col width="52%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">#</th>
+<th class="head">Contents</th>
+<th class="head">Name</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1</td>
+<td>Red channel</td>
+<td>control_red01.tif</td>
+</tr>
+<tr class="row-odd"><td>2</td>
+<td>Green channel</td>
+<td>control_green01.tif</td>
+</tr>
+<tr class="row-even"><td>3</td>
+<td>Red background</td>
+<td>control_before01.tif</td>
+</tr>
+<tr class="row-odd"><td>4</td>
+<td>Coordinates</td>
+<td>control_01.tif</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="outputs">
+<h2>Outputs<a class="headerlink" href="#outputs" title="Permalink to this headline">¶</a></h2>
+<p>The function runBatch generates a number of out put files. Each individual data 
+set (comprised of the four files described above) generates the following five
+files:</p>
+<p>1. An excel file containing the intensities of each ULF and it&#8217;s distance from 
+the photoconverted region. 
+2. A png file with the red and green channel of the first frame. The red channel 
+shows the region of photo conversion as a red circle. The green channel shows 
+the tracks of the ULFs. 
+3. A png file with a plot of the slope the intensity in the converted region 
+versus time.
+4. A png file with all intensities for all ULFs plotted versus time.
+5. A png file with ULF intensities plotted versus time grouped by distance from 
+the converted region.</p>
+<p>In addition, two batch files are generated summarizing the results of all data
+sets analyzed in the batch.</p>
+<p>1. An excel file allslopes.xlsx contain the slopes for all ULFs in the batch 
+groups by distance from the converted region by sheet of the spread sheet.
+2. A png file all_intensities_by_distance.png that contains plots of all ULF 
+intensities grouped by distance from the converted region.</p>
+<p>The file exchangeExample.py contains and example of using runBatch.</p>
+</div>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Python 2.7</li>
+<li>csv 1.0</li>
+<li>xlsxWriter 0.3.7-1</li>
+<li>tifffile 2013.11.03 (<a class="reference external" href="http://www.lfd.uci.edu/~gohlke">http://www.lfd.uci.edu/~gohlke</a>)</li>
+<li>Matplotlib 1.3.1</li>
+<li>Numpy 1.8.1</li>
+<li>scipy 0.14.0</li>
+</ul>
+</div>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ulfexchange.analyzeDataSet">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">analyzeDataSet</tt><big>(</big><em>CoordFileName</em>, <em>redImageName</em>, <em>greenImageName</em>, <em>resultsName</em>, <em>convertedCenter</em>, <em>convertedRadius</em>, <em>fileNumber</em>, <em>dataDirectory</em>, <em>backgroundName=None</em>, <em>bleachingFileName=None</em><big>)</big><a class="headerlink" href="#ulfexchange.analyzeDataSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Analyzes one dataset including a red image series, a green image series, 
+a coordinates file, and a background image file. This is where the 5 step 
+workflow for ULF intensity analysis is implemented.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.analyzeFilesTogether">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">analyzeFilesTogether</tt><big>(</big><em>arguments</em>, <em>backgroundNames=None</em><big>)</big><a class="headerlink" href="#ulfexchange.analyzeFilesTogether" title="Permalink to this definition">¶</a></dt>
+<dd><p>Analyzes multiple data sets together. Calls analyzeDataSet for each 
+data set and also groups results from all data sets.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.bleachCorrectInts">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">bleachCorrectInts</tt><big>(</big><em>ints</em>, <em>bleachFrac</em><big>)</big><a class="headerlink" href="#ulfexchange.bleachCorrectInts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses the bleaching fraction calculated from a bleaching movie to correct
+intensity of each ULF. An alternative to ratio bleach correction. Not 
+used by Robert <em>et al.</em></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.distance">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">distance</tt><big>(</big><em>p1</em>, <em>p2</em><big>)</big><a class="headerlink" href="#ulfexchange.distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the distance between two points, p1 = (x1, y1) and 
+p2 = (x2, y2)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.findBleachFraction">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">findBleachFraction</tt><big>(</big><em>mat</em><big>)</big><a class="headerlink" href="#ulfexchange.findBleachFraction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the fraction of the movie that has bleached in each frame.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.findSlopes">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">findSlopes</tt><big>(</big><em>intensities</em>, <em>times=None</em>, <em>nPoints=5</em><big>)</big><a class="headerlink" href="#ulfexchange.findSlopes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates a linear regression using intensities  as the y-values and time
+as x-values (or indices if no time is provided) and returns the slope.
+Only the first nPoints are included in this calculation. Default is to 
+use the first 5 points. This corresponds to the first minute in a 
+time-lapse image series acquired at one frame every 15 seconds.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.getAverageIntensityInCircle">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">getAverageIntensityInCircle</tt><big>(</big><em>frame</em>, <em>center</em>, <em>radius</em><big>)</big><a class="headerlink" href="#ulfexchange.getAverageIntensityInCircle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the average intensity of pixels in a circle defined  by center 
+and radius in the 2D array frame.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.getAverageIntensityInCircleOverTime">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">getAverageIntensityInCircleOverTime</tt><big>(</big><em>imMat</em>, <em>center</em>, <em>radius</em><big>)</big><a class="headerlink" href="#ulfexchange.getAverageIntensityInCircleOverTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of the average intensities in a single circle defined by 
+center and radius in each frame of imMat.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.getBackgroundULFInensities">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">getBackgroundULFInensities</tt><big>(</big><em>backgroundMat</em>, <em>tracks</em><big>)</big><a class="headerlink" href="#ulfexchange.getBackgroundULFInensities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the intensity of ULFs in the background image using the first 
+location measured in tracks.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.getDistancesToFirstPointInTrack">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">getDistancesToFirstPointInTrack</tt><big>(</big><em>tracks</em>, <em>point</em><big>)</big><a class="headerlink" href="#ulfexchange.getDistancesToFirstPointInTrack" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the distance between a point and the first point in tracks 
+is returned by readInCoordinatesFile and has the format
+[([x11,x12,x13],[y11,y12,y13]),([x21,x22,x23],[y21,y22,y23])]
+where particle 1 has position (X11, y11)  in frame 1 and position 
+(x12, y12) in frame 2.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.getIntensities">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">getIntensities</tt><big>(</big><em>mat</em>, <em>tracks</em>, <em>radius=6</em><big>)</big><a class="headerlink" href="#ulfexchange.getIntensities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the average intensities in circles in each frame of the 3D numpy 
+array mat (x,y,time). ULF locations are the coordinates in tracks. 
+Tracks is created by redInCoordinatesFile and has the format: 
+[([x11,x12,x13],[y11,y12,y13]),([x21,x22,x23],[y21,y22,y23])]
+where particle 1 has position (X11, y11)  in frame 1 and position 
+(x12, y12) in frame 2.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.groupByDistance">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">groupByDistance</tt><big>(</big><em>vals</em>, <em>distances</em><big>)</big><a class="headerlink" href="#ulfexchange.groupByDistance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Groups ULF intensity traces by distance to the center of the converted 
+region.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.makeBleachingPlot">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">makeBleachingPlot</tt><big>(</big><em>bleachingFile</em>, <em>nFrames=5</em><big>)</big><a class="headerlink" href="#ulfexchange.makeBleachingPlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates plots of the average intensity in each frame. Saves the plots 
+to the same directory as the bleaching movie. 
+Plots are annotated  with the slope of the line and the percent bleaching.
+Not used in the work published by Roberts <em>et al.</em> but used for trouble 
+shooting experiments.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.measureBleachingOverEntireMovie">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">measureBleachingOverEntireMovie</tt><big>(</big><em>mat</em><big>)</big><a class="headerlink" href="#ulfexchange.measureBleachingOverEntireMovie" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the average intensity of the each frame.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.normalizeIntensities">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">normalizeIntensities</tt><big>(</big><em>intensities</em>, <em>convertedIntensity</em><big>)</big><a class="headerlink" href="#ulfexchange.normalizeIntensities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalize intensities by dividing each intensity by the intensity in the
+converted region in the first frame.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.plotByDistances">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">plotByDistances</tt><big>(</big><em>intensities</em>, <em>distances</em>, <em>directory</em>, <em>fileNumber=None</em><big>)</big><a class="headerlink" href="#ulfexchange.plotByDistances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates and saves a plot of intensities versus time (y-axis is 
+normalized intensities) grouped by distance. The distance ranges 50 to 100 
+pixels, 100 to 150 pixels, 150 to 200 pixels and 200 plus pixels are 
+each displayed in a separate subplot.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.plotConvertedIntensities">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">plotConvertedIntensities</tt><big>(</big><em>ints</em>, <em>redMovieName</em>, <em>nFrames=5</em><big>)</big><a class="headerlink" href="#ulfexchange.plotConvertedIntensities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the intensiteis in the converted regions over time.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.plotIntensities">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">plotIntensities</tt><big>(</big><em>directory</em>, <em>number</em>, <em>normedIntensities</em>, <em>ymax=1.0</em><big>)</big><a class="headerlink" href="#ulfexchange.plotIntensities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates and saves a figure with a plot of all the intensities (y-axis is 
+labeled normalized intensities) on the same axis. ymax in the maximum
+value of the y-axis.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.plotTracks">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">plotTracks</tt><big>(</big><em>tracks</em>, <em>redMat</em>, <em>greenMat</em>, <em>fileNumber</em>, <em>centerConversion</em>, <em>radiusConversion</em>, <em>directory</em>, <em>number</em><big>)</big><a class="headerlink" href="#ulfexchange.plotTracks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates and save a figure that displays the first frame of the red and 
+green channels with a circle identifying the converted region displayed 
+over the red channel and the ULF tracks displayed over the green channel.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.ratioBleachCorrect">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">ratioBleachCorrect</tt><big>(</big><em>movie</em><big>)</big><a class="headerlink" href="#ulfexchange.ratioBleachCorrect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Corrects for bleaching by normalizing the intensity of each frame to that
+of the first frame.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.readInCoordinatesFile">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">readInCoordinatesFile</tt><big>(</big><em>fileName</em>, <em>nFrames</em><big>)</big><a class="headerlink" href="#ulfexchange.readInCoordinatesFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads in a text file of coordinates created by Diatrack particle tracking
+software. Excludes particles that don&#8217;t exist in every frame. 
+Returns a list of tracks with the format: 
+[([x11,x12,x13],[y11,y12,y13]),([x21,x22,x23],[y21,y22,y23])]
+where particle  1 has position (X11, y11)  in frame 1 and position 
+(x12, y12) in frame 2.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.readInTif">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">readInTif</tt><big>(</big><em>fileName</em><big>)</big><a class="headerlink" href="#ulfexchange.readInTif" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads in a single frame or multi-frame tiff file into a numpy array. Uses
+TiffFile written by Christoph Gohlke.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.removeIntensitiesInConvertedRegion">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">removeIntensitiesInConvertedRegion</tt><big>(</big><em>convertedRadius</em>, <em>intensities</em>, <em>distances</em><big>)</big><a class="headerlink" href="#ulfexchange.removeIntensitiesInConvertedRegion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes values from the list intensities and removes corresponding values 
+from the list distance when distances are less than the converted radius. 
+This is used to eliminate ULFs in the photoconverted region from further
+calculations.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.runBatch">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">runBatch</tt><big>(</big><em>fileNumbers</em>, <em>directory</em>, <em>rootName</em>, <em>covertedCenter</em>, <em>convertedRadius=50</em>, <em>background=False</em>, <em>bleachingFile=None</em><big>)</big><a class="headerlink" href="#ulfexchange.runBatch" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>This is the primary function to use for analyzing an experiment.*</strong> 
+runBatch performs  a complete analysis on multiple sets of data. Each 
+data file needs to be named with the following convention 
+for run batch to work:</p>
+<ol class="arabic simple">
+<li>rootname + red + number + .tif</li>
+<li>rootname + green + number + .tif</li>
+<li>rootname + before + number + .tif</li>
+<li>rootname + .txt</li>
+</ol>
+<p>Where rootname is a name that is the same for all files in the batch and 
+number is unique. See the explanation at the top of ulfexchange.py and 
+Robert <em>et al.</em> for a complete explanation of ULF intensity analysis.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.saveTif">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">saveTif</tt><big>(</big><em>fileName</em>, <em>data</em><big>)</big><a class="headerlink" href="#ulfexchange.saveTif" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a numpy array as a TIFF file. Input argument numpy arrays have the
+format [x,y,t]. tifffile assumes [t,x,y] so this function swaps axes. This 
+function was used for trouble shooting the experiments.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.subtractULFBackground">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">subtractULFBackground</tt><big>(</big><em>ULFBackgrounds</em>, <em>intensities</em><big>)</big><a class="headerlink" href="#ulfexchange.subtractULFBackground" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subtracts the background intensity of a ULF from the same ULF in each
+frame after photoconversion. ULFBackgrounds is a list of background 
+intensities. intensities is a list of ULFs lists of ULF intensity trace over 
+time. Backgrounds and intensity traces at the same index correspond to the
+same ULF.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.writeAllDataToFile">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">writeAllDataToFile</tt><big>(</big><em>workbook</em>, <em>allDistances</em>, <em>allSlopes</em><big>)</big><a class="headerlink" href="#ulfexchange.writeAllDataToFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an Excel file with allDistances and allSlopes. Slopes and 
+distances are grouped by range of distance. Each range is written to a 
+separate sheet within the file. Used for recording batch data.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.writeDataToFile">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">writeDataToFile</tt><big>(</big><em>worksheet</em>, <em>fileNames</em>, <em>data</em><big>)</big><a class="headerlink" href="#ulfexchange.writeDataToFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes calculated parameters in data to the Excel worksheet. 
+Worksheet is created by xlsxwriter.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.writeDataToRow">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">writeDataToRow</tt><big>(</big><em>worksheet</em>, <em>wbRow</em>, <em>wbCol</em>, <em>data</em><big>)</big><a class="headerlink" href="#ulfexchange.writeDataToRow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes values in the list data to a row wbRow in worksheet (an Excel file 
+worksheet)starting with column wbCol. Worksheet is created by 
+xlsxwriter.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.writeVersionInfoToFile">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">writeVersionInfoToFile</tt><big>(</big><em>worksheet</em>, <em>wbRow</em><big>)</big><a class="headerlink" href="#ulfexchange.writeVersionInfoToFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>If there is git version information available, write it to row wbRow in 
+worksheet. Worksheet is created by xlsxwriter.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ulfexchange - Functions for analyzing confocal images of photoconvertible vimentin <sup>Y117L</sup></a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#work-flow">Work Flow</a></li>
+<li><a class="reference internal" href="#required-inputs">Required inputs</a></li>
+<li><a class="reference internal" href="#naming-convention-for-batch-processing">Naming convention for batch processing</a></li>
+<li><a class="reference internal" href="#outputs">Outputs</a></li>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">ulfexchange 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2014, Molly Rossow.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
