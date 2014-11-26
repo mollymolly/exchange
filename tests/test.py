@@ -1,4 +1,4 @@
-from plot_intensities_from_tracks import  getAverageIntensityInCircle,  \
+from ulfexchange import  getAverageIntensityInCircle,  \
                         getDistancesToFirstPointInTrack, removeIntensitiesInConvertedRegion, normalizeIntensities, \
                         findSlopes, readInCoordinatesFile, getIntensities, distance, getAverageIntensityInCircleOverTime, \
                         measureBleachingOverEntireMovie, getBackgroundULFInensities, subtractULFBackground, findBleachFraction, \
