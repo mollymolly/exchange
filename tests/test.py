@@ -1,11 +1,18 @@
-from ulfexchange import  getAverageIntensityInCircle,  \
-                        getDistancesToFirstPointInTrack, removeIntensitiesInConvertedRegion, normalizeIntensities, \
-                        findSlopes, readInCoordinatesFile, getIntensities, distance, getAverageIntensityInCircleOverTime, \
-                        measureBleachingOverEntireMovie, getBackgroundULFInensities, subtractULFBackground, findBleachFraction, \
-                        bleachCorrectInts, ratioBleachCorrect
-
 from numpy import ones, mean
 import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from ulfexchange import  getAverageIntensityInCircle,  \
+                        getDistancesToFirstPointInTrack,\
+                        removeIntensitiesInConvertedRegion,\
+                        normalizeIntensities, \
+                        findSlopes, readInCoordinatesFile, getIntensities, \
+                        distance, getAverageIntensityInCircleOverTime, \
+                        measureBleachingOverEntireMovie, \
+                        getBackgroundULFInensities, subtractULFBackground, \
+                        findBleachFraction, bleachCorrectInts, ratioBleachCorrect
+                        
 homeDir = os.path.dirname(os.path.realpath(__file__))
 
 # Test ReadInTi
@@ -228,8 +235,7 @@ solution = 5*ones((10,10,5))
 if all(redMat) == all(solution):
     print 'pass ratioBleachCorrect'
 else:
-    print 'fail ratioBleachCorrect'
- '''   
+    print 'fail ratioBleachCorrect' '''  
 redMat = ones((10,10,5))
 redMat[:,:,0] = 5
 redMat[5,5,0] = 6
