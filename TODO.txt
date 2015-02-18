@@ -1,0 +1,11 @@
+- add copyright. Liscence?
+- imageShapeDiscrepencyError - correct. 
+
+Later
+- break up analyze data function into subfunctions 
+
+Done
+- update comments for each function
+- update list of functions
+- spell check
+- convert tests to use test class 

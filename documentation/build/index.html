@@ -68,18 +68,20 @@ the change in intensity in ULFs.</p>
 <h2>Work Flow<a class="headerlink" href="#work-flow" title="Permalink to this headline">¶</a></h2>
 <p>Robert <em>et al.</em> used ulfexchange.py to analyze confocal images of confocal images
 of cells expressing mEos-vimentin <sup>Y117L</sup> with the following steps:</p>
-<p>1. <strong>Bleach correction</strong>: Red channel images were bleach corrected by scaling 
-each image so that its mean was the same as the first image.
-2. <strong>ULF intensity calculation</strong>: Coordinates of the center of each ULF in each 
+<ol class="arabic simple">
+<li><strong>Bleach correction</strong>: Red channel images were bleach corrected by scaling 
+each image so that its mean was the same as the first image.</li>
+<li><strong>ULF intensity calculation</strong>: Coordinates of the center of each ULF in each 
 frame (obtained separately using the green channel) were used to measure the 
 intensity of each ULF in each red frame by calculating the average fluorescence 
-in a circle of fixed size centered at these coordinates.
-3. <strong>Background subtraction</strong>: The intensity of each ULF before conversion was 
-subtracted from all its post-conversion intensities.
-4. <strong>Normalization between data sets</strong>: ULF intensities were normalized by 
-dividing by the background subtracted intensity in the photoconverted region.
-5. <strong>Numerical and graphical results</strong> Slope calculations, plotting, values 
-written file, etc.</p>
+in a circle of fixed size centered at these coordinates.</li>
+<li><strong>Background subtraction</strong>: The intensity of each ULF before conversion was 
+subtracted from all its post-conversion intensities.</li>
+<li><strong>Normalization between data sets</strong>: ULF intensities were normalized by 
+dividing by the background subtracted intensity in the photoconverted region.</li>
+<li><strong>Numerical and graphical results</strong> Slope calculations, plotting, values 
+written file, etc.</li>
+</ol>
 <p>The function analyzeDataSet implements the workflow described above. Further 
 details of the analysis are included in Robert <em>et. al.</em></p>
 </div>
@@ -149,23 +151,50 @@ is unique.</p>
 <p>The function runBatch generates a number of out put files. Each individual data 
 set (comprised of the four files described above) generates the following five
 files:</p>
-<p>1. An excel file containing the intensities of each ULF and it&#8217;s distance from 
-the photoconverted region. 
-2. A png file with the red and green channel of the first frame. The red channel 
+<ol class="arabic simple">
+<li>An excel file containing the intensities of each ULF and it&#8217;s distance from 
+the photoconverted region.</li>
+<li>A png file with the red and green channel of the first frame. The red channel 
 shows the region of photo conversion as a red circle. The green channel shows 
-the tracks of the ULFs. 
-3. A png file with a plot of the slope the intensity in the converted region 
-versus time.
-4. A png file with all intensities for all ULFs plotted versus time.
-5. A png file with ULF intensities plotted versus time grouped by distance from 
-the converted region.</p>
+the tracks of the ULFs.</li>
+<li>A png file with a plot of the slope the intensity in the converted region 
+versus time.</li>
+<li>A png file with all intensities for all ULFs plotted versus time.</li>
+<li>A png file with ULF intensities plotted versus time grouped by distance from 
+the converted region.</li>
+</ol>
 <p>In addition, two batch files are generated summarizing the results of all data
 sets analyzed in the batch.</p>
-<p>1. An excel file allslopes.xlsx contain the slopes for all ULFs in the batch 
-groups by distance from the converted region by sheet of the spread sheet.
-2. A png file all_intensities_by_distance.png that contains plots of all ULF 
-intensities grouped by distance from the converted region.</p>
+<ol class="arabic simple">
+<li>An excel file allslopes.xlsx contain the slopes for all ULFs in the batch 
+groups by distance from the converted region by sheet of the spread sheet.</li>
+<li>A png file all_intensities_by_distance.png that contains plots of all ULF 
+intensities grouped by distance from the converted region.</li>
+</ol>
 <p>The file exchangeExample.py contains and example of using runBatch.</p>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>Below is an example script for calling runBatch on three sets of data:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ulfexchange</span> <span class="kn">import</span>  <span class="n">runBatch</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="c"># Set up inputs</span>
+<span class="c"># The directory where the data is stored</span>
+<span class="n">directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">__file__</span><span class="p">)),</span> <span class="s">&#39;sample data&#39;</span><span class="p">)</span>
+<span class="c"># File numbers of the files to be analyzed as strings</span>
+<span class="n">fileNumbers</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;002&#39;</span><span class="p">,</span><span class="s">&#39;004&#39;</span><span class="p">,</span><span class="s">&#39;006&#39;</span><span class="p">]</span>
+<span class="c"># The root name of each file. For example, one file in this set is control002red.tif. </span>
+<span class="n">rootName</span> <span class="o">=</span> <span class="s">&#39;control&#39;</span>
+
+<span class="c"># Set the location and the radius of the converted region. This is determined </span>
+<span class="c"># experimentally. </span>
+<span class="p">(</span><span class="n">covertedCenter</span><span class="p">,</span> <span class="n">convertedRadius</span><span class="p">)</span> <span class="o">=</span> <span class="p">((</span><span class="mf">147.0</span><span class="p">,</span> <span class="mf">116.0</span><span class="p">),</span> <span class="mi">50</span><span class="p">)</span>
+
+<span class="c"># Call the analysis routine</span>
+<span class="n">runBatch</span><span class="p">(</span><span class="n">fileNumbers</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">rootName</span><span class="p">,</span> <span class="n">covertedCenter</span><span class="p">,</span> <span class="n">convertedRadius</span><span class="p">,</span> <span class="n">background</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
@@ -454,6 +483,7 @@ worksheet. Worksheet is created by xlsxwriter.</p>
 <li><a class="reference internal" href="#required-inputs">Required inputs</a></li>
 <li><a class="reference internal" href="#naming-convention-for-batch-processing">Naming convention for batch processing</a></li>
 <li><a class="reference internal" href="#outputs">Outputs</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
 <li><a class="reference internal" href="#requirements">Requirements</a></li>
 <li><a class="reference internal" href="#functions">Functions</a></li>
 </ul>

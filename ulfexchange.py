@@ -20,17 +20,17 @@ Robert *et al.* used ulfexchange.py to analyze confocal images of confocal image
 of cells expressing mEos-vimentin :superscript:`Y117L` with the following steps:
 
 1. **Bleach correction**: Red channel images were bleach corrected by scaling 
-each image so that its mean was the same as the first image.
+   each image so that its mean was the same as the first image.
 2. **ULF intensity calculation**: Coordinates of the center of each ULF in each 
-frame (obtained separately using the green channel) were used to measure the 
-intensity of each ULF in each red frame by calculating the average fluorescence 
-in a circle of fixed size centered at these coordinates.
+   frame (obtained separately using the green channel) were used to measure the 
+   intensity of each ULF in each red frame by calculating the average fluorescence 
+   in a circle of fixed size centered at these coordinates.
 3. **Background subtraction**: The intensity of each ULF before conversion was 
-subtracted from all its post-conversion intensities.
+   subtracted from all its post-conversion intensities.
 4. **Normalization between data sets**: ULF intensities were normalized by 
-dividing by the background subtracted intensity in the photoconverted region.
+   dividing by the background subtracted intensity in the photoconverted region.
 5. **Numerical and graphical results** Slope calculations, plotting, values 
-written file, etc.
+   written file, etc.
 
 The function analyzeDataSet implements the workflow described above. Further 
 details of the analysis are included in Robert *et. al.* 
@@ -82,25 +82,48 @@ set (comprised of the four files described above) generates the following five
 files: 
 
 1. An excel file containing the intensities of each ULF and it's distance from 
-the photoconverted region. 
+   the photoconverted region. 
 2. A png file with the red and green channel of the first frame. The red channel 
-shows the region of photo conversion as a red circle. The green channel shows 
-the tracks of the ULFs. 
+   shows the region of photo conversion as a red circle. The green channel shows 
+   the tracks of the ULFs. 
 3. A png file with a plot of the slope the intensity in the converted region 
-versus time.
+   versus time.
 4. A png file with all intensities for all ULFs plotted versus time.
 5. A png file with ULF intensities plotted versus time grouped by distance from 
-the converted region. 
+   the converted region. 
 
 In addition, two batch files are generated summarizing the results of all data
 sets analyzed in the batch. 
 
 1. An excel file allslopes.xlsx contain the slopes for all ULFs in the batch 
-groups by distance from the converted region by sheet of the spread sheet.
+   groups by distance from the converted region by sheet of the spread sheet.
 2. A png file all_intensities_by_distance.png that contains plots of all ULF 
-intensities grouped by distance from the converted region. 
+   intensities grouped by distance from the converted region. 
 
 The file exchangeExample.py contains and example of using runBatch.
+
+Example
+-----------------------------------------------
+Below is an example script for calling runBatch on three sets of data::
+        
+
+    from ulfexchange import  runBatch
+    import os
+    
+    # Set up inputs
+    # The directory where the data is stored
+    directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'sample data')
+    # File numbers of the files to be analyzed as strings
+    fileNumbers = ['002','004','006']
+    # The root name of each file. For example, one file in this set is control002red.tif. 
+    rootName = 'control'
+    
+    # Set the location and the radius of the converted region. This is determined 
+    # experimentally. 
+    (covertedCenter, convertedRadius) = ((147.0, 116.0), 50)
+    
+    # Call the analysis routine
+    runBatch(fileNumbers, directory, rootName, covertedCenter, convertedRadius, background = True)
 
 Requirements
 -----------------------------------------------
@@ -971,7 +994,7 @@ def analyzeFilesTogether(arguments, backgroundNames = None):
             bleachingFile)
         except _missingFileError as fName:
             unProcessedFiles.append(fName)   
-        except imageShapeDiscrepencyError as imageNamges:
+        except imageShapeDiscrepencyError as imageNamges: #TODO! fix this. 
             shapeDiscrepencenyFiles.append(imageNamges)       
         else:
             distances = data['distances']
@@ -1024,7 +1047,9 @@ def runBatch(fileNumbers, directory, rootName, covertedCenter,\
         
         Where rootname is a name that is the same for all files in the batch and 
         number is unique. See the explanation at the top of ulfexchange.py and 
-        Robert *et al.* for a complete explanation of ULF intensity analysis.""" 
+        Robert *et al.* for a complete explanation of ULF intensity analysis.
+         
+    """ 
     
     allCoords = []
     allRed = []
@@ -1063,6 +1088,51 @@ def runBatch(fileNumbers, directory, rootName, covertedCenter,\
         backgroundNames = None
         
     analyzeFilesTogether(arguments, backgroundNames)
+    
+def runBatchDirectExchange(fileNumbers, directory, rootName, covertedCenter,\
+            convertedRadius = 50):        
+    """ ?????
+            
+        1. rootname + red + number + .tif
+        2. rootname + green + number + .tif
+        3. rootname + before + number + .tif
+        4. rootname + .txt 
+        
+        
+       ??   
+    """ 
+    
+    allCoords = []
+    allRed = []
+    allGreens = []
+    allResults = []
+    allBackgrounds = []
+    
+    for fileNumber in fileNumbers:
+        CoordFileName = join(directory, (rootName + fileNumber + '.txt'))
+        redImageName = join(directory, (rootName + fileNumber + 'red.tif'))
+        greenImageName =join(directory, (rootName + fileNumber + 'green.tif'))
+        resultsName = join(directory, (rootName + '_results' + fileNumber + \
+        '.xlsx'))
+        backgroundName = join(directory, (rootName + fileNumber + 'before.tif'))
+        
+        allCoords.append(CoordFileName)
+        allRed.append(redImageName)
+        allGreens.append(greenImageName)
+        allResults.append(resultsName)
+        allBackgrounds.append(backgroundName)
+       
+    arguments = {}     
+    arguments['coordFileNames'] = allCoords
+    arguments['redImageNames'] = allRed
+    arguments['greenImageNames'] = allGreens
+    arguments['covertedCenter'] = covertedCenter
+    arguments['convertedRadius'] = convertedRadius
+    arguments['dataDirectory'] = directory
+    arguments['FileNumbers'] = fileNumbers
+    arguments['ResultsNames'] = allResults
+        
+    analyseRedandGreen(arguments)
         
 def makeBleachingPlot(bleachingFile, nFrames = 5):
     """ Creates plots of the average intensity in each frame. Saves the plots 
@@ -1126,21 +1196,3 @@ def plotConvertedIntensities(ints, redMovieName, nFrames = 5):
     annotate(text2, xy=(0.3, 0.9),  xycoords='axes fraction')
     fig.savefig(join(directoryName, filename + 'bleaching region.png'))
     close(fig)
-
-
-        
-        
-            
-        
-            
-        
-    
-        
-        
-        
-        
-            
- 
-
-    
-

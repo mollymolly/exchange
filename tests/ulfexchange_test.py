@@ -1,6 +1,7 @@
 import unittest
 import os
 import sys
+# Import ulfexchange from one directory up
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import ulfexchange as ulfx
 import numpy as np
@@ -12,9 +13,7 @@ class TestSequenceFunctions(unittest.TestCase):
     
     ############
     # File I/O #
-    ############
-    
-    
+    ############  
     def test_readInCoordinatesFiles(self):
         # Test reading in coordinates files
         nFrames = 6; # only read in the first 6 lines
@@ -22,6 +21,9 @@ class TestSequenceFunctions(unittest.TestCase):
                 nFrames)
         self.assertEqual(tracks[0][0][0], 289.003846)
         
+    def test_readInTif(self):
+        fname = 'test.tif'
+        data = ulfx.readInTif(fname)
         
     ######################
     # Basic Calculations #
@@ -32,6 +34,8 @@ class TestSequenceFunctions(unittest.TestCase):
         self.assertEqual(d1,5)
         d2 = ulfx.distance((5,5),(8,9))
         self.assertEqual(d2,5)
+        d3 = ulfx.distance((0,0),(0,0))
+        self.assertEqual(d3,0)
         
     def test_getAverageIntensityInCircle(self):
         
@@ -150,15 +154,8 @@ class TestSequenceFunctions(unittest.TestCase):
                         intensities)
                         
         self.assertEqual(correctedInts, \
-        [[0, 1, 2], [7, 7, 7], [2, 2, 2], [0, 0, 0]])
+                         [[0, 1, 2], [7, 7, 7], [2, 2, 2], [0, 0, 0]])
             
-        
-
-
-     
-    
-
-
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestSequenceFunctions)
 unittest.TextTestRunner(verbosity=2).run(suite)
