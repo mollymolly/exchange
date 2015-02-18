@@ -1,5 +1,5 @@
 - add copyright. Liscence?
-- imageShapeDiscrepencyError - correct. 
+- use os.join instead of back slash thingy. 
 
 Later
 - break up analyze data function into subfunctions 
@@ -9,3 +9,4 @@ Done
 - update list of functions
 - spell check
 - convert tests to use test class 
+- imageShapeDiscrepencyError - correct.

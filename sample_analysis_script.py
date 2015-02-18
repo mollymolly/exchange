@@ -10,7 +10,7 @@ import os
 directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), \
             'sample data')
 # File numbers of the files to be analyzed as strings
-fileNumbers = ['002','004','006']
+fileNumbers = ['003','004','006']
 # The root name of each file. For example, one file in this set is control002red.tif. 
 rootName = 'control'
 
