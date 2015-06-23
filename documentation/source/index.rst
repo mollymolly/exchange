@@ -4,9 +4,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-ulfexchange - Functions for analyzing confocal images of photoconvertible
- vimentin :superscript:`Y117L` 
-========================================================================================================
+
+ulfexchange - Functions for analyzing confocal images of photoconvertible vimentin :superscript:`Y117L` 
+============================================================================================================
 
 
 
@@ -17,7 +17,7 @@ ulfexchange - Functions for analyzing confocal images of photoconvertible
 .. automodule:: ulfexchange
    :members:
 
-Indices and tables
+Indices
 ==================
 
 * :ref:`genindex`

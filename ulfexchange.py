@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Introduction
 ---------------------------------------
@@ -1287,15 +1288,12 @@ def runBatch(fileNumbers, directory, rootName, covertedCenter,\
     
 def runBatchRedAndGreen(fileNumbers, directory, rootName, covertedCenter,\
             convertedRadius):        
-    """ ?????
+    """ Red and Green channel comparison. 
             
         1. rootname + red + number + .tif
         2. rootname + green + number + .tif
         3. rootname + before + number + .tif
-        4. rootname + .txt 
-        
-        
-       ??   
+        4. rootname + .txt    
     """ 
     
     allCoords = []

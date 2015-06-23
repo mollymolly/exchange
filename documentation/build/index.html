@@ -53,7 +53,10 @@
 <span class="target" id="module-ulfexchange"></span><div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>This module analyzes intensity changes in confocal images of cells expressing 
-mEos-vimentin <sup>Y117L</sup> as described in PAPER NAME GOES HERE.</p>
+mEos-vimentin <sup>Y117L</sup> as described in &#8220;Vimentin filament 
+precursors exchange subunits in an ATP-dependent manner&#8221; Amélie Robert, Molly 
+Rossow, Caroline Hookway, Stephen A. Adams and Vladimir I. Gelfand (Accepted to 
+PNAS June 2015.)</p>
 <p>The experiments described by Robert <em>et al.</em> use a photoconvertible fluorophore
 (mEos3.2) to track the behavior of a mutant of the vimentin protein 
 (vimentin <sup>Y117L</sup>) that forms oligomers known as unit length 
@@ -181,10 +184,12 @@ intensities grouped by distance from the converted region.</li>
 
 <span class="c"># Set up inputs</span>
 <span class="c"># The directory where the data is stored</span>
-<span class="n">directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">__file__</span><span class="p">)),</span> <span class="s">&#39;sample data&#39;</span><span class="p">)</span>
+<span class="n">directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">__file__</span><span class="p">)),</span> 
+<span class="s">&#39;sample data&#39;</span><span class="p">)</span>
 <span class="c"># File numbers of the files to be analyzed as strings</span>
 <span class="n">fileNumbers</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;002&#39;</span><span class="p">,</span><span class="s">&#39;004&#39;</span><span class="p">,</span><span class="s">&#39;006&#39;</span><span class="p">]</span>
-<span class="c"># The root name of each file. For example, one file in this set is control002red.tif. </span>
+<span class="c"># The root name of each file. For example, one file in this set is </span>
+<span class="c"># control002red.tif. </span>
 <span class="n">rootName</span> <span class="o">=</span> <span class="s">&#39;control&#39;</span>
 
 <span class="c"># Set the location and the radius of the converted region. This is determined </span>
@@ -192,7 +197,8 @@ intensities grouped by distance from the converted region.</li>
 <span class="p">(</span><span class="n">covertedCenter</span><span class="p">,</span> <span class="n">convertedRadius</span><span class="p">)</span> <span class="o">=</span> <span class="p">((</span><span class="mf">147.0</span><span class="p">,</span> <span class="mf">116.0</span><span class="p">),</span> <span class="mi">50</span><span class="p">)</span>
 
 <span class="c"># Call the analysis routine</span>
-<span class="n">runBatch</span><span class="p">(</span><span class="n">fileNumbers</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">rootName</span><span class="p">,</span> <span class="n">covertedCenter</span><span class="p">,</span> <span class="n">convertedRadius</span><span class="p">,</span> <span class="n">background</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">runBatch</span><span class="p">(</span><span class="n">fileNumbers</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">rootName</span><span class="p">,</span> <span class="n">covertedCenter</span><span class="p">,</span> <span class="n">convertedRadius</span><span class="p">,</span> 
+<span class="n">background</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -223,6 +229,18 @@ workflow for ULF intensity analysis is implemented.</p>
 <tt class="descclassname">ulfexchange.</tt><tt class="descname">analyzeFilesTogether</tt><big>(</big><em>arguments</em>, <em>backgroundNames=None</em><big>)</big><a class="headerlink" href="#ulfexchange.analyzeFilesTogether" title="Permalink to this definition">¶</a></dt>
 <dd><p>Analyzes multiple data sets together. Calls analyzeDataSet for each 
 data set and also groups results from all data sets.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.analyzeRedAndGreen">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">analyzeRedAndGreen</tt><big>(</big><em>arguments</em><big>)</big><a class="headerlink" href="#ulfexchange.analyzeRedAndGreen" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO What does this do???</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.analyzeRedAndGreenSet">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">analyzeRedAndGreenSet</tt><big>(</big><em>dataSet</em><big>)</big><a class="headerlink" href="#ulfexchange.analyzeRedAndGreenSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO What does this do?</p>
 </dd></dl>
 
 <dl class="function">
@@ -329,11 +347,18 @@ converted region in the first frame.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="ulfexchange.openFilesInSet">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">openFilesInSet</tt><big>(</big><em>redImageName</em>, <em>greenImageName</em><big>)</big><a class="headerlink" href="#ulfexchange.openFilesInSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Opens the red and green files in a data set. Returns two lists of 
+matrices.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="ulfexchange.plotByDistances">
 <tt class="descclassname">ulfexchange.</tt><tt class="descname">plotByDistances</tt><big>(</big><em>intensities</em>, <em>distances</em>, <em>directory</em>, <em>fileNumber=None</em><big>)</big><a class="headerlink" href="#ulfexchange.plotByDistances" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates and saves a plot of intensities versus time (y-axis is 
-normalized intensities) grouped by distance. The distance ranges 50 to 100 
-pixels, 100 to 150 pixels, 150 to 200 pixels and 200 plus pixels are 
+normalized intensities) grouped by distance. The distance ranges 50 to 
+100 pixels, 100 to 150 pixels, 150 to 200 pixels and 200 plus pixels are
 each displayed in a separate subplot.</p>
 </dd></dl>
 
@@ -395,7 +420,7 @@ calculations.</p>
 
 <dl class="function">
 <dt id="ulfexchange.runBatch">
-<tt class="descclassname">ulfexchange.</tt><tt class="descname">runBatch</tt><big>(</big><em>fileNumbers</em>, <em>directory</em>, <em>rootName</em>, <em>covertedCenter</em>, <em>convertedRadius=50</em>, <em>background=False</em>, <em>bleachingFile=None</em><big>)</big><a class="headerlink" href="#ulfexchange.runBatch" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">runBatch</tt><big>(</big><em>fileNumbers</em>, <em>directory</em>, <em>rootName</em>, <em>covertedCenter</em>, <em>convertedRadius=50</em>, <em>background=True</em>, <em>bleachingFile=None</em><big>)</big><a class="headerlink" href="#ulfexchange.runBatch" title="Permalink to this definition">¶</a></dt>
 <dd><p><strong>This is the primary function to use for analyzing an experiment.*</strong> 
 runBatch performs  a complete analysis on multiple sets of data. Each 
 data file needs to be named with the following convention 
@@ -409,6 +434,18 @@ for run batch to work:</p>
 <p>Where rootname is a name that is the same for all files in the batch and 
 number is unique. See the explanation at the top of ulfexchange.py and 
 Robert <em>et al.</em> for a complete explanation of ULF intensity analysis.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ulfexchange.runBatchRedAndGreen">
+<tt class="descclassname">ulfexchange.</tt><tt class="descname">runBatchRedAndGreen</tt><big>(</big><em>fileNumbers</em>, <em>directory</em>, <em>rootName</em>, <em>covertedCenter</em>, <em>convertedRadius</em><big>)</big><a class="headerlink" href="#ulfexchange.runBatchRedAndGreen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Red and Green channel comparison.</p>
+<ol class="arabic simple">
+<li>rootname + red + number + .tif</li>
+<li>rootname + green + number + .tif</li>
+<li>rootname + before + number + .tif</li>
+<li>rootname + .txt</li>
+</ol>
 </dd></dl>
 
 <dl class="function">
@@ -461,8 +498,8 @@ worksheet. Worksheet is created by xlsxwriter.</p>
 
 </div>
 </div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="indices">
+<h1>Indices<a class="headerlink" href="#indices" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
 <li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
 <li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
@@ -488,7 +525,7 @@ worksheet. Worksheet is created by xlsxwriter.</p>
 <li><a class="reference internal" href="#functions">Functions</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+<li><a class="reference internal" href="#indices">Indices</a></li>
 </ul>
 
   <h3>This Page</h3>
