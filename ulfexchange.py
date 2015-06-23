@@ -2,7 +2,11 @@
 Introduction
 ---------------------------------------
 This module analyzes intensity changes in confocal images of cells expressing 
-mEos-vimentin :superscript:`Y117L` as described in PAPER NAME GOES HERE.
+mEos-vimentin :superscript:`Y117L` as described in "Vimentin filament 
+precursors exchange subunits in an ATP-dependent manner" Amélie Robert, Molly 
+Rossow, Caroline Hookway, Stephen A. Adams and Vladimir I. Gelfand (Accepted to 
+PNAS June 2015.)
+
 
 The experiments described by Robert *et al.* use a photoconvertible fluorophore
 (mEos3.2) to track the behavior of a mutant of the vimentin protein 
