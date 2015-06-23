@@ -112,10 +112,12 @@ Below is an example script for calling runBatch on three sets of data::
     
     # Set up inputs
     # The directory where the data is stored
-    directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'sample data')
+    directory = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
+    'sample data')
     # File numbers of the files to be analyzed as strings
     fileNumbers = ['002','004','006']
-    # The root name of each file. For example, one file in this set is control002red.tif. 
+    # The root name of each file. For example, one file in this set is 
+    # control002red.tif. 
     rootName = 'control'
     
     # Set the location and the radius of the converted region. This is determined 
@@ -123,7 +125,8 @@ Below is an example script for calling runBatch on three sets of data::
     (covertedCenter, convertedRadius) = ((147.0, 116.0), 50)
     
     # Call the analysis routine
-    runBatch(fileNumbers, directory, rootName, covertedCenter, convertedRadius, background = True)
+    runBatch(fileNumbers, directory, rootName, covertedCenter, convertedRadius, 
+    background = True)
 
 Requirements
 -----------------------------------------------
@@ -190,7 +193,7 @@ def readInCoordinatesFile(fileName, nFrames):
        [([x11,x12,x13],[y11,y12,y13]),([x21,x22,x23],[y21,y22,y23])]
        where particle  1 has position (X11, y11)  in frame 1 and position 
        (x12, y12) in frame 2. """
-
+    
     # open file
     with open(fileName, 'rU') as coordfile:
         tracksReader = csv.reader(coordfile, delimiter=' ', quotechar='|')
@@ -213,8 +216,8 @@ def readInCoordinatesFile(fileName, nFrames):
         # Check if data is rowwise or columnwise and divide sort into x and y.
         # y is first. Really. It's in the note at the top of each .txt 
         if titleRow[1] == '(columnwise):':
-            y = numberRow[0:-1:3]  
-            x = numberRow[1:-1:3]
+            raise _fileFormatError(fileName)
+            return tracks
         else:
             y = numberRow[1:-1:3] 
             x = numberRow[2:-1:3]
@@ -312,12 +315,15 @@ def getDistancesToFirstPointInTrack(tracks, point):
        [([x11,x12,x13],[y11,y12,y13]),([x21,x22,x23],[y21,y22,y23])]
        where particle 1 has position (X11, y11)  in frame 1 and position 
        (x12, y12) in frame 2."""
-    
+    text_file = open("distances002.txt", "w")
     distances = []
     for t in tracks:
         xs = t[0]
         ys = t[1] 
-        distances.append(distance((xs[0],ys[0]), point))
+        d = distance((xs[0],ys[0]), point)
+        distances.append(d)
+        text_file.write("y = {0:.2f} x = {1:.2f} d = {2:.2f}\n".format(xs[0], ys[0], d))
+    text_file.close()   
     return distances
   
 def plotTracks(tracks, redMat, greenMat, fileNumber, centerConversion, \
@@ -608,7 +614,6 @@ def findSlopes(intensities, times = None, nPoints = 5):
        Only the first nPoints are included in this calculation. Default is to 
        use the first 5 points. This corresponds to the first minute in a 
        time-lapse image series acquired at one frame every 15 seconds.""" 
-    
     if times == None:
         times = range(1, len(intensities[0]) + 1)
     slopes = []
@@ -621,6 +626,13 @@ def findSlopes(intensities, times = None, nPoints = 5):
         intercepts.append(intercept)
         r_values.append(r_value)
     return(slopes, intercepts, r_values)
+    
+class _fileFormatError(Exception):
+    """Exception raised when a file does not have the correct format."""
+    def __init__(self, fileName):
+        self.fileName = fileName
+    def __str__(self):
+        return repr(self.fileName)
     
 class  _missingFileError(Exception):
     """Exception raised when a file does not exist. Returns the file name."""
@@ -706,6 +718,7 @@ def analyzeDataSet(CoordFileName, redImageName, greenImageName, resultsName, \
     nFrames = sRed[2]  
     
     # WORKFLOW STEP2: ULF intensity calculation
+    
     try: 
         tracks = readInCoordinatesFile(CoordFileName, nFrames)
     except IOError:
@@ -714,7 +727,8 @@ def analyzeDataSet(CoordFileName, redImageName, greenImageName, resultsName, \
     
     # Get the red channel intesity of each ULF in each frame. ULF locations are 
     # defined  by tracks (created by readInCoordinatesFile) 
-    intensities = getIntensities(redMat, tracks)        
+    intensities = getIntensities(redMat, tracks)  
+    print(intensities[0][0:10])      
     
     # Get the distnaces between the center of the converted region and the
     # first point in each track. 
@@ -807,11 +821,16 @@ def analyzeDataSet(CoordFileName, redImageName, greenImageName, resultsName, \
     
     return (data)
     
-def analyzeRedGreenSet(CoordFileName, redImageName, greenImageName, resultsName, \
-                convertedCenter, convertedRadius, fileNumber, dataDirectory,\
-                backgroundName):
-    """TODO"""
-        
+def analyzeRedAndGreenSet(dataSet):
+    """TODO What does this do?"""
+    
+    CoordFileName = dataSet['cordName']
+    redImageName = dataSet['redName']
+    greenImageName = dataSet['greenName']
+    resultsName = dataSet['resultsName']
+    convertedCenter = dataSet['covertedCenter']
+    redBackgroundName = dataSet['redBackgroundName']
+    greenBackgroundName = dataSet['greenBackgroundName']
     # Open files. Return if files do not exist.
     (redMat, greenMat) = openFilesInSet(redImageName, greenImageName)
         
@@ -822,7 +841,7 @@ def analyzeRedGreenSet(CoordFileName, redImageName, greenImageName, resultsName,
     if sRed != sGreen:
         raise _imageShapeDiscrepencyError(redImageName, greenImageName)
         return data
-        
+        #
     # Skip bleach correction.
     
     nFrames = sRed[2]  
@@ -834,137 +853,66 @@ def analyzeRedGreenSet(CoordFileName, redImageName, greenImageName, resultsName,
         raise _missingFileError(CoordFileName) 
         return data     
     
-    # Get the red channel intesity of each ULF in each frame. ULF locations are 
+    # Get the red and green channel intesity of each ULF in each frame. ULF locations are 
     # defined  by tracks (created by readInCoordinatesFile) 
     RedIntensities = getIntensities(redMat, tracks) 
-    
-   # Get the green channel intensity of each ULF in each frame. ULF locations 
-   # are defined by tracks. 
     GreenIntensities = getIntensities(greenMat, tracks) 
     
     # Get the distnaces between the center of the converted region and the
     # first point in each track. 
     distances = getDistancesToFirstPointInTrack(tracks, convertedCenter)
     
-    # Get the average intensity in the converted region in each frame. 
-    convertedIntensitiesRed = getAverageIntensityInCircleOverTime(redMat, \
-    convertedCenter, convertedRadius)
-    convertedIntensitiesGreen = getAverageIntensityInCircleOverTime(greenMat, \
-    convertedCenter, convertedRadius)
+    # WORKFLOW STEP 3: Background subtraction
+    #Background subtaction  
+    try: 
+        backgroundMatRed = readInTif(redBackgroundName)  
+        backgroundMatGreen = readInTif(greenBackgroundName)
+    except IOError:
+        raise _missingFileError(redBackgroundName) 
+        return data  
     
-   # plotConvertedIntensities(convertedIntensities,redImageName) # Do I need this? 
+    # Find the intensity of each ULF in the background frame. 
+    backgroundULFIntsRed = getBackgroundULFInensities(backgroundMatRed, tracks)
+    backgroundULFIntsGreen = getBackgroundULFInensities(backgroundMatGreen, tracks)
+      
+    # Subtract the intensity of the ULF in the background frame from the
+    # Intensity in subsequent frames.     
+    nIntsRed = subtractULFBackground(backgroundULFIntsRed, RedIntensities)
+    nIntsGreen = subtractULFBackground(backgroundULFIntsGreen, GreenIntensities)
     
-    # WORKFLOW STEP 3: Background subtraction (Only for red channel)
-    #Background subtaction
-    
-    if backgroundName!= None:
-        try: 
-            backgroundMat = readInTif(backgroundName)  
-        except IOError:
-            raise _missingFileError(backgroundName) 
-            return data  
-        # Check if background image is the same shape as the red and green
-        # images.
-        
-        # Find the intensity of each ULF in the background frame. 
-        backgroundULFInts = getBackgroundULFInensities(backgroundMat, tracks) 
-        # Subtract the intensity of the ULF in the background frame from the
-        # Intensity in subsequent frames.     
-        nIntsRed = subtractULFBackground(backgroundULFInts, RedIntensities)
-        backgroundInConvertedRegion = \
-        getAverageIntensityInCircle(backgroundMat, \
-        convertedCenter, convertedRadius)
-    else:  
-        backgroundInConvertedRegion = 0
-        nIntsRed = RedIntensities
-        backgroundULFInts = []
-    
-    # WORKFLOW STEP 4: Normalization
-    # Normalize relative to the intensity of the converted region in the first 
-    # frame minus the intensity of the converted region in the background frame. 
-    normedIntensitiesRed = normalizeIntensities(nIntsRed, \
-    convertedIntensitiesRed[0] - backgroundInConvertedRegion) 
-    normedIntensitiesGreen = normalizeIntensities(GreenIntensities, \
-    convertedIntensitiesGreen[0] - backgroundInConvertedRegion) 
-    # normedIntensities = normalizeIntensities(nInts, convertedIntensities[0]) 
+    # No normealization for now! 2/18/15
 
     # WORKFLOW STEP 5: Visulaize and report results   
     # Get slopes of raw and normalized intensities. 
     (slopesRed, interceptsRed, r_valuesRed) = findSlopes(nIntsRed)
-    (normSlopesRed, normInterceptsRed, normR_valuesRed) = findSlopes(normedIntensitiesRed)
-    (slopesGreen, interceptsGree, r_valuesGree) = findSlopes(GreenIntensities)
-    (normSlopesGree, normInterceptsGree, normR_valuesGree) = findSlopes(normedIntensitiesGreen)
-    
-    # Get bleaching rate (intensity in each entire frame in each frame)
-    #redFrameInts = measureBleachingOverEntireMovie(redMat)
-    #greenFrameInts = measureBleachingOverEntireMovie(greenMat)
-    
-    # Write caluluated parameters to excel file. 
-    fileNames = {}
-    fileNames['redImageName'] = redImageName
-    fileNames['greenImageName'] =greenImageName
-    fileNames['CoordFileName'] = CoordFileName
-    fileNames['backgroundName'] = backgroundName
+    (slopesGreen, interceptsGree, r_valuesGreen) = findSlopes(nIntsGreen)
 
-    fileNames['bleachingFileName'] = 'None'
-
-    data = {}
-    data['intensities red'] = nIntsRed
-    data['intensiteis green'] = GreenIntensities
-    data['distances'] = distances
-    data['normedIntensitiesRed'] = normedIntensitiesRed
-    data['normedIntensitiesGreen'] = normedIntensitiesGreen
-    ####CHANGE!#######
-    """
-    with open(resultsName, 'wb') as fid:
-        writer = csv.writer(fid)
-        for k, v in data.iteritems():
-            writer.writerow([k] + v)
-    """
     workbook = xlsxwriter.Workbook(resultsName)
     redSheet = workbook.add_worksheet(name='Red')
     greenSheet = workbook.add_worksheet(name='Green')
     row = 0
     col = 0
     redSheet.write(row, col, 'Distances')
-    redSheet.write(row, col + 1, 'Normalized intensities')
+    redSheet.write(row, col + 1, 'Slope')
+    redSheet.write(row, col + 2, 'Intensities')
     greenSheet.write(row, col, 'Distances')
-    greenSheet.write(row, col + 1, 'Normalized intentsites')
+    greenSheet.write(row, col + 1, 'Slope')
+    greenSheet.write(row, col + 2, 'Intentsites')
     row+=1
     for ind, d in enumerate(distances):
+        # Write out distances
         redSheet.write(row, col, d)
         greenSheet.write(row, col, d)
-        writeDataToRow(redSheet, row, col + 1, normedIntensitiesRed[ind])
-        writeDataToRow(greenSheet, row, col + 1, normedIntensitiesGreen[ind])
+        # Write out slopes
+        redSheet.write(row, col + 1, slopesRed[ind])
+        greenSheet.write(row, col + 1, slopesGreen[ind])
+        # Write out intensities
+        writeDataToRow(redSheet, row, col + 2, nIntsRed[ind])
+        writeDataToRow(greenSheet, row, col + 2, nIntsGreen[ind])
         row+=1
-    workbook.close()
+    workbook.close() 
     
-        
-    
-    
-   # data['slopes'] = slopes
-   # data['normSlopes'] = normSlopes
-   # data['redFrameInts'] = redFrameInts
-    #data['greenFrameInts'] = greenFrameInts
-    #data['backgroundULFs'] = backgroundULFInts
-    #data['convertedCenter'] = convertedCenter
-    #data['convertedRadius'] = convertedRadius 
-    #data['backgroundInConvertedRegion'] = backgroundInConvertedRegion
-    #data['bleachedFraction'] = []
-        
-   # workbook = xlsxwriter.Workbook(resultsName)
-   # worksheet = workbook.add_worksheet()
-   # writeDataToFile(worksheet, fileNames, data)
-    #workbook.close()
-    
-    # Plot raw data and results. 
-    #plotTracks(tracks, redMat, greenMat, fileNumber, convertedCenter, \
-    #           convertedRadius, dataDirectory, fileNumber)
-    #plotIntensities(dataDirectory, fileNumber, normedIntensities)
-    #plotByDistances(normedIntensities, distances, dataDirectory, fileNumber)  
-    
-    
-    return (data)
+    return ({})
 
 def subtractULFBackground(ULFBackgrounds, intensities):
     """Subtracts the background intensity of a ULF from the same ULF in each
@@ -1044,8 +992,8 @@ def measureBleachingOverEntireMovie(mat):
     
 def plotByDistances(intensities, distances, directory, fileNumber = None):
     """Generates and saves a plot of intensities versus time (y-axis is 
-       normalized intensities) grouped by distance. The distance ranges 50 to 100 
-       pixels, 100 to 150 pixels, 150 to 200 pixels and 200 plus pixels are 
+       normalized intensities) grouped by distance. The distance ranges 50 to 
+       100 pixels, 100 to 150 pixels, 150 to 200 pixels and 200 plus pixels are
        each displayed in a separate subplot. """
 
     # Group intensities by distance.
@@ -1196,42 +1144,47 @@ def analyzeFilesTogether(arguments, backgroundNames = None):
         fileNumber = None)
         workbook.close()
         
-def analyseRedandGreen(arguments):
-    """Analyzes multiple data sets together. Calls analyzeDataSet for each 
-     data set and also groups results from all data sets. TODO correct. """
+def analyzeRedAndGreen(arguments):
+    """ TODO What does this do??? """
     
     coordFileNames = arguments['coordFileNames']
     redImageNames = arguments['redImageNames']
     greenImageNames = arguments['greenImageNames']   
     covertedCenter = arguments['covertedCenter']
-    convertedRadius = arguments['convertedRadius'] 
-    dataDirectory = arguments['dataDirectory']
-    FileNumbers = arguments['FileNumbers']
+    #convertedRadius = arguments['convertedRadius'] 
+    #dataDirectory = arguments['dataDirectory']
+    #FileNumbers = arguments['FileNumbers']
     ResultsNames = arguments['ResultsNames']
+    redBackgroundsRed = arguments['allBackgroundsRed'] 
+    allBackgroundsGreen = arguments['allBackgroundsGreen']
     
     # Initalize empty background names list.
     backgroundNames = []
     for x in xrange(len(coordFileNames)):
         backgroundNames.append(None)
            
-    allDistances = []
-    allSlopes = []
-    allNormedIntensities = [] 
+    #allDistances = []
+    #allSlopes = []
+    #allNormedIntensities = [] 
     unProcessedFiles = []
     shapeDiscrepencenyFiles = []
-    normedIntensities = []
-    normSlopes = []
-    allDistances = []
-      
-    for cordName, redName, greenName, bgName, FileNumber, resultsName in \
-        zip(coordFileNames, redImageNames, greenImageNames, backgroundNames,\
-        FileNumbers, ResultsNames): 
+    #normedIntensities = []
+    #normSlopes = []
+    #allDistances = []
+    
+    # Names of arguments to pass to analyzeRedAndGreenSet
+    keys = ['cordName', 'redName', 'greenName', 'resultsName',\
+            'redBackgroundName', 'greenBackgroundName']
+    # group by by data set and analyze.
+    for  setInputs in zip(coordFileNames, redImageNames, greenImageNames, \
+                      ResultsNames, redBackgroundsRed, allBackgroundsGreen): 
         try:
-            data = analyzeRedGreenSet(cordName, redName, greenName, resultsName,\
-            covertedCenter, convertedRadius, FileNumber, dataDirectory, bgName)
+            argIn = dict(zip(keys, setInputs))
+            argIn['covertedCenter'] = covertedCenter
+            data = analyzeRedAndGreenSet(argIn)
         except _missingFileError as fName:
             unProcessedFiles.append(fName)   
-        except analyzeRedGreenSet as imageNamges: #TODO! fix this. 
+        except analyzeRedAndGreenSet as imageNamges: 
             shapeDiscrepencenyFiles.append(imageNamges)       
         else:
             pass
@@ -1271,7 +1224,7 @@ def analyseRedandGreen(arguments):
         
         
 def runBatch(fileNumbers, directory, rootName, covertedCenter,\
-            convertedRadius = 50, background = False,\
+            convertedRadius = 50, background = True,\
             bleachingFile = None):        
     """ **This is the primary function to use for analyzing an experiment.*** 
         runBatch performs  a complete analysis on multiple sets of data. Each 
@@ -1329,7 +1282,7 @@ def runBatch(fileNumbers, directory, rootName, covertedCenter,\
     analyzeFilesTogether(arguments, backgroundNames)
     
 def runBatchRedAndGreen(fileNumbers, directory, rootName, covertedCenter,\
-            convertedRadius = 50):        
+            convertedRadius):        
     """ ?????
             
         1. rootname + red + number + .tif
@@ -1345,7 +1298,8 @@ def runBatchRedAndGreen(fileNumbers, directory, rootName, covertedCenter,\
     allRed = []
     allGreens = []
     allResults = []
-    allBackgrounds = []
+    allBackgroundsRed = []
+    allBackgroundsGreen = []
     
     for fileNumber in fileNumbers:
         CoordFileName = join(directory, (rootName + fileNumber + '.txt'))
@@ -1353,13 +1307,15 @@ def runBatchRedAndGreen(fileNumbers, directory, rootName, covertedCenter,\
         greenImageName =join(directory, (rootName + fileNumber + 'green.tif'))
         resultsName = join(directory, (rootName + '_redgreenresults' + fileNumber + \
         '.xlsx'))
-        backgroundName = join(directory, (rootName + fileNumber + 'before.tif'))
+        redBackgroundName = join(directory, (rootName + fileNumber + 'before.tif'))
+        greenBackgroundName = join(directory, 'background green.tif') # Always the same name
         
         allCoords.append(CoordFileName)
         allRed.append(redImageName)
         allGreens.append(greenImageName)
         allResults.append(resultsName)
-        allBackgrounds.append(backgroundName)
+        allBackgroundsRed.append(redBackgroundName)
+        allBackgroundsGreen.append(greenBackgroundName)
        
     arguments = {}     
     arguments['coordFileNames'] = allCoords
@@ -1370,8 +1326,10 @@ def runBatchRedAndGreen(fileNumbers, directory, rootName, covertedCenter,\
     arguments['dataDirectory'] = directory
     arguments['FileNumbers'] = fileNumbers
     arguments['ResultsNames'] = allResults
+    arguments['allBackgroundsRed'] = allBackgroundsRed
+    arguments['allBackgroundsGreen'] = allBackgroundsGreen
         
-    analyseRedandGreen(arguments)
+    analyzeRedAndGreen(arguments)
         
 def makeBleachingPlot(bleachingFile, nFrames = 5):
     """ Creates plots of the average intensity in each frame. Saves the plots 

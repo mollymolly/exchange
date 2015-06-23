@@ -1,5 +1,7 @@
 - add copyright. Liscence?
 - use os.join instead of back slash thingy. 
+- handle errors consistantly
+- check if there are no tracks
 
 Later
 - break up analyze data function into subfunctions 
