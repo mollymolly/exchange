@@ -1,7 +1,7 @@
 import mock
 import sys
  
-MOCK_MODULES = ['xlsxwriter', 'numpy',  'matplotlib.pylab', 'scipy.stats']
+MOCK_MODULES = ['xlsxwriter', 'matplotlib.pylab',  'numpy', 'scipy.stats']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
 
