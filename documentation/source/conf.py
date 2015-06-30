@@ -1,3 +1,10 @@
+import mock
+import sys
+ 
+MOCK_MODULES = ['xlsxwriter', 'numpy',  'matplotlib.pylab', 'scipy.stats']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
+
 # -*- coding: utf-8 -*-
 #
 # ulfexchange documentation build configuration file, created by
