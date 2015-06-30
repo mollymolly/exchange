@@ -157,9 +157,9 @@ from copy import deepcopy
 import csv
 import xlsxwriter
 from tifffile import TiffFile, imsave
-from matplotlib.pylab import  figure, cm, close, Circle, tight_layout, annotate
 from numpy import shape, floor, ceil, swapaxes, sqrt, mean, zeros, amax
 from scipy.stats import linregress
+from matplotlib.pylab import  figure, cm, close, Circle, tight_layout, annotate
 
 
 def readInTif(fileName):
