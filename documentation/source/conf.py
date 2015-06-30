@@ -41,6 +41,8 @@ extensions = [
     'sphinx.ext.ifconfig',
 ]
 
+html_style = '/default.css'
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
