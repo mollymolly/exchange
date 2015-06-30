@@ -156,11 +156,10 @@ from heapq import nsmallest
 from copy import deepcopy
 import csv
 import xlsxwriter
+from matplotlib.pylab import  figure, cm, close, Circle, tight_layout, annotate
 from tifffile import TiffFile, imsave
 from numpy import shape, floor, ceil, swapaxes, sqrt, mean, zeros, amax
 from scipy.stats import linregress
-from matplotlib.pylab import  figure, cm, close, Circle, tight_layout, annotate
-
 
 def readInTif(fileName):
     """Reads in a single frame or multi-frame tiff file into a numpy array. Uses
