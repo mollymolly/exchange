@@ -7,4 +7,4 @@ precursors exchange subunits in an ATP-dependent manner" Amélie Robert, Molly
 Rossow, Caroline Hookway, Stephen A. Adams and Vladimir I. Gelfand (Accepted to 
 PNAS June 2015.)
 
-See the documentation for details and instructuions. 
+See the documentation for details and instructuions: http://ulf-exchange.readthedocs.org/en/latest/index.html 
