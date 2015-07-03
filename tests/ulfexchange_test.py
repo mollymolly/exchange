@@ -21,9 +21,9 @@ class TestSequenceFunctions(unittest.TestCase):
                 nFrames)
         self.assertEqual(tracks[0][0][0], 289.003846)
         
-    def test_readInTif(self):
-        fname = 'test.tif'
-        data = ulfx.readInTif(fname)
+   # def test_readInTif(self):
+   #     fname = 'test.tif'
+   #     data = ulfx.readInTif(fname)
         
     ######################
     # Basic Calculations #
