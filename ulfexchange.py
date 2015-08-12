@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Introduction
+""" Introduction
 ---------------------------------------
 This module analyzes intensity changes in confocal images of cells expressing 
 mEos-vimentin :superscript:`Y117L` as described in "Vimentin filament 
@@ -163,8 +162,13 @@ from scipy.stats import linregress
 
 def readInTif(fileName):
     """Reads in a single frame or multi-frame tiff file into a numpy array. Uses
-    TiffFile written by Christoph Gohlke."""
+    TiffFile written by Christoph Gohlke.
     
+    Arguments:
+       fileName: Full path to tiff file.
+    Return:
+       Numpy array.
+    """
     tif = TiffFile(fileName)
     images = tif.asarray()
     images = images.astype('float')
@@ -177,14 +181,18 @@ def readInTif(fileName):
     return images
     
 def saveTif(fileName, data):
-    """Save a numpy array as a TIFF file. Input argument numpy arrays have the
-    format [x,y,t]. tifffile assumes [t,x,y] so this function swaps axes. This 
-    function was used for trouble shooting the experiments."""
-    
+    """Saves a numpy array as a TIFF file.This 
+    function was used for trouble shooting the experiments.
+
+    Arguments:
+        fileName: Full path to tiff file.
+        data: Numpy arrays with the format [x,y,t].
+    """
     data[data >= 2**16] =  2**16 - 1  # deal with 16 bit overflow
     data[data <= 0] = 0
     data = data.astype('uint16')
     s = shape(data)
+    # tifffile assumes [t,x,y] so swaps axes.
     if len(s) > 2:
         data = swapaxes(data,0,2)
     imsave(fileName, data)
@@ -193,11 +201,15 @@ def saveTif(fileName, data):
 def readInCoordinatesFile(fileName, nFrames):
     """Reads in a text file of coordinates created by Diatrack particle tracking
        software. Excludes particles that don't exist in every frame. 
-       Returns a list of tracks with the format: 
-       [([x11,x12,x13],[y11,y12,y13]),([x21,x22,x23],[y21,y22,y23])]
-       where particle  1 has position (X11, y11)  in frame 1 and position 
-       (x12, y12) in frame 2. """
-    
+       
+    Arguments:
+        fileName: Full path to coordinate file.
+        nFrame: Number of frames.
+    Return: Returns a list of tracks with the format: 
+        [([x11,x12,x13],[y11,y12,y13]),([x21,x22,x23],[y21,y22,y23])]
+        where particle  1 has position (X11, y11)  in frame 1 and position 
+        (x12, y12) in frame 2.
+    """
     # open file
     with open(fileName, 'rU') as coordfile:
         tracksReader = csv.reader(coordfile, delimiter=' ', quotechar='|')
@@ -234,8 +246,8 @@ def readInCoordinatesFile(fileName, nFrames):
     
 def distance(p1, p2):
     """Calculates the distance between two points, p1 = (x1, y1) and 
-       p2 = (x2, y2)"""
-    
+       p2 = (x2, y2)
+    """
     x1 = p1[0]
     y1 = p1[1]
     x2 = p2[0]
@@ -245,13 +257,20 @@ def distance(p1, p2):
     
 def getIntensities(mat, tracks, radius = 6):
     """Finds the average intensities in circles in each frame of the 3D numpy 
-       array mat (x,y,time). ULF locations are the coordinates in tracks. 
-       Tracks is created by redInCoordinatesFile and has the format: 
-       [([x11,x12,x13],[y11,y12,y13]),([x21,x22,x23],[y21,y22,y23])]
-       where particle 1 has position (X11, y11)  in frame 1 and position 
-       (x12, y12) in frame 2. 
+       array mat using the coordinates in track. 
+
+    Arguments:
+        mat: 3D numpy array (x,y,time).
+        tracks: Coordinates of ULF locations, created by readInCoordinatesFile 
+             and has the format: 
+             [([x11,x12,x13],[y11,y12,y13]),([x21,x22,x23],[y21,y22,y23])]
+             where particle 1 has position (X11, y11)  in frame 1 and position 
+             (x12, y12) in frame 2. 
+        radius: Radius of the circle of the circle around each location. 
+    Returns:
+         List of lists of intensities. Each sublist correspnds to a location 
+         in tracks. Sublists are in the same order as the coordinates in tracks. 
      """
-    
     s = shape(mat)
     if len(s) == 3:
         npoints = s[2]
@@ -269,23 +288,32 @@ def getIntensities(mat, tracks, radius = 6):
     
 def getAverageIntensityInCircleOverTime(imMat, center, radius):
     """Returns a list of the average intensities in a single circle defined by 
-       center and radius in each frame of imMat."""
+       center and radius in each frame of imMat.
+
+    Arguments:
+        inMat: 3D numpy array (x,y,time).
+        center: (x, y) coordinate pair.
+        radius: circle radius.
+    Returns:
+       Li
+    """
     
     s = shape(imMat)
     averageIntensities = []
     # For each frame, find the average intensity in the circle.
     if len(s) > 2:
         for t in range(s[2]):
-            averageIntensities.append(getAverageIntensityInCircle(imMat[:,:,t],\
+            averageIntensities.append(getAverageIntensityInCircle(imMat[:,:,t],
             center,radius))
     else:
-        averageIntensities.append(getAverageIntensityInCircle(imMat[:,:],\
+        averageIntensities.append(getAverageIntensityInCircle(imMat[:,:],
         center,radius))
     return averageIntensities
     
 def getAverageIntensityInCircle(frame, center, radius):
     """Returns the average intensity of pixels in a circle defined  by center 
-       and radius in the 2D array frame."""
+       and radius in the 2D array frame.
+    """
     
     s = shape(frame)
     includedIntensities = [] # the points in the circle
@@ -314,11 +342,17 @@ def getAverageIntensityInCircle(frame, center, radius):
     return mean(includedIntensities)
 
 def getDistancesToFirstPointInTrack(tracks, point):
-    """Finds the distance between a point and the first point in tracks 
-       is returned by readInCoordinatesFile and has the format
-       [([x11,x12,x13],[y11,y12,y13]),([x21,x22,x23],[y21,y22,y23])]
-       where particle 1 has position (X11, y11)  in frame 1 and position 
-       (x12, y12) in frame 2."""
+    """Finds the distance between a point and the first point in tracks.
+
+    Arguments:
+        tracks:  A list returned by readInCoordinatesFile. tracks has the format
+                 [([x11,x12,x13],[y11,y12,y13]),([x21,x22,x23],[y21,y22,y23])]
+                ???? where particle 1 has position (X11, y11)  in frame 1 and position 
+                 (x12, y12) in frame 2.
+       points: (x,y) coordinate pair.
+    Returns:
+       The distance between the first point in tracks and point. 
+    """
     text_file = open("distances002.txt", "w")
     distances = []
     for t in tracks:
@@ -551,7 +585,6 @@ def writeDataToFile(worksheet, fileNames, data):
 
         wbRow += 1
 
-
 def writeAllDataToFile(workbook, allDistances, allSlopes):
     """Creates an Excel file with allDistances and allSlopes. Slopes and 
        distances are grouped by range of distance. Each range is written to a 
@@ -654,7 +687,8 @@ class _imageShapeDiscrepencyError(Exception):
         return repr(self.files)
         
 def findBleachFraction(mat):
-    """Calculates the fraction of the movie that has bleached in each frame.""" 
+    """Calculates the fraction of the movie that has bleached in each frame.
+    """ 
     bleachMatInts = measureBleachingOverEntireMovie(mat)
     bleachFrac = []
     for i in bleachMatInts:
@@ -664,7 +698,8 @@ def findBleachFraction(mat):
     
 def ratioBleachCorrect(movie):
     """Corrects for bleaching by normalizing the intensity of each frame to that
-       of the first frame."""
+       of the first frame.
+    """
     frame0 = movie[:,:,0]
     minVal = amax(nsmallest(100000,movie.flatten()))
     m0 = float(mean(frame0) - minVal)
@@ -698,12 +733,13 @@ def openFilesInSet(redImageName, greenImageName):
         return data
     return (redMat, greenMat)
         
-def analyzeDataSet(CoordFileName, redImageName, greenImageName, resultsName, \
-                convertedCenter, convertedRadius, fileNumber, dataDirectory,\
+def analyzeDataSet(CoordFileName, redImageName, greenImageName, resultsName, 
+                convertedCenter, convertedRadius, fileNumber, dataDirectory,
                 backgroundName = None, bleachingFileName = None):
     """Analyzes one dataset including a red image series, a green image series, 
        a coordinates file, and a background image file. This is where the 5 step 
-       workflow for ULF intensity analysis is implemented. """
+       workflow for ULF intensity analysis is implemented.
+    """
         
     # Open files. Return if files do not exist.
     (redMat, greenMat) = openFilesInSet(redImageName, greenImageName)
@@ -739,7 +775,7 @@ def analyzeDataSet(CoordFileName, redImageName, greenImageName, resultsName, \
     distances = getDistancesToFirstPointInTrack(tracks, convertedCenter)
     
     # Get the average intensity in the converted region in each frame. 
-    convertedIntensities = getAverageIntensityInCircleOverTime(redMat, \
+    convertedIntensities = getAverageIntensityInCircleOverTime(redMat, 
     convertedCenter, convertedRadius)
     
     plotConvertedIntensities(convertedIntensities,redImageName)
@@ -760,8 +796,7 @@ def analyzeDataSet(CoordFileName, redImageName, greenImageName, resultsName, \
         # Subtract the intensity of the ULF in the background frame from the
         # Intensity in subsequent frames.     
         nInts = subtractULFBackground(backgroundULFInts, intensities)
-        backgroundInConvertedRegion = \
-        getAverageIntensityInCircle(backgroundMat, \
+        backgroundInConvertedRegion = getAverageIntensityInCircle(backgroundMat, 
         convertedCenter, convertedRadius)
     else:  
         backgroundInConvertedRegion = 0
@@ -771,7 +806,7 @@ def analyzeDataSet(CoordFileName, redImageName, greenImageName, resultsName, \
     # WORKFLOW STEP 4: Normalization
     # Normalize relative to the intensity of the converted region in the first 
     # frame minus the intensity of the converted region in the background frame. 
-    normedIntensities = normalizeIntensities(nInts, \
+    normedIntensities = normalizeIntensities(nInts, 
     convertedIntensities[0] - backgroundInConvertedRegion) 
     # normedIntensities = normalizeIntensities(nInts, convertedIntensities[0]) 
 
@@ -817,7 +852,7 @@ def analyzeDataSet(CoordFileName, redImageName, greenImageName, resultsName, \
     
     
     # Plot raw data and results. 
-    plotTracks(tracks, redMat, greenMat, fileNumber, convertedCenter, \
+    plotTracks(tracks, redMat, greenMat, fileNumber, convertedCenter, 
                convertedRadius, dataDirectory, fileNumber)
     plotIntensities(dataDirectory, fileNumber, normedIntensities)
     plotByDistances(normedIntensities, distances, dataDirectory, fileNumber)  
