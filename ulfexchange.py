@@ -160,9 +160,14 @@ from tifffile import TiffFile, imsave
 from numpy import shape, floor, ceil, swapaxes, sqrt, mean, zeros, amax
 from scipy.stats import linregress
 
+
+#############
+# Data I/O  #
+############
 def readInTif(fileName):
-    """Reads in a single frame or multi-frame tiff file into a numpy array. Uses
-    TiffFile written by Christoph Gohlke.
+    """Reads in a single frame or multi-frame tiff file into a numpy array. 
+
+       Uses TiffFile written by Christoph Gohlke.
     
     Arguments:
        fileName: Full path to tiff file.
@@ -181,8 +186,9 @@ def readInTif(fileName):
     return images
     
 def saveTif(fileName, data):
-    """Saves a numpy array as a TIFF file.This 
-    function was used for trouble shooting the experiments.
+    """Saves a numpy array as a TIFF file.
+
+       This function was used for trouble shooting experiments.
 
     Arguments:
         fileName: Full path to tiff file.
@@ -196,10 +202,11 @@ def saveTif(fileName, data):
     if len(s) > 2:
         data = swapaxes(data,0,2)
     imsave(fileName, data)
-    
-    
+      
 def readInCoordinatesFile(fileName, nFrames):
-    """Reads in a text file of coordinates created by Diatrack particle tracking
+    """Reads in a text file of coordinates. 
+
+       Reads in a text file of coordinates created by Diatrack particle tracking
        software. Excludes particles that don't exist in every frame. 
        
     Arguments:
@@ -243,10 +250,17 @@ def readInCoordinatesFile(fileName, nFrames):
             tracks.append((x,y))
         
     return tracks
-    
+
+
+################
+# Calculations #
+################
 def distance(p1, p2):
-    """Calculates the distance between two points, p1 = (x1, y1) and 
-       p2 = (x2, y2)
+    """Calculates the distance between two points.
+
+       Arguments: 
+           p1: point (x1, y1)
+           p2: point (x2, y2)
     """
     x1 = p1[0]
     y1 = p1[1]
@@ -256,8 +270,7 @@ def distance(p1, p2):
     return d
     
 def getIntensities(mat, tracks, radius = 6):
-    """Finds the average intensities in circles in each frame of the 3D numpy 
-       array mat using the coordinates in track. 
+    """Finds the average intensities in circles in each frame of mat. 
 
     Arguments:
         mat: 3D numpy array (x,y,time).
@@ -287,15 +300,18 @@ def getIntensities(mat, tracks, radius = 6):
     return intensities
     
 def getAverageIntensityInCircleOverTime(imMat, center, radius):
-    """Returns a list of the average intensities in a single circle defined by 
-       center and radius in each frame of imMat.
+    """Finds the average intensity in a circle over time. 
+
+       Finds the average intensities in a single circle defined by 
+       center and radius in each frame of imMat. This function uses the same 
+       center for all frames.
 
     Arguments:
         inMat: 3D numpy array (x,y,time).
         center: (x, y) coordinate pair.
         radius: circle radius.
     Returns:
-       Li
+        List of intensities in circle over time. 
     """
     
     s = shape(imMat)
@@ -311,8 +327,17 @@ def getAverageIntensityInCircleOverTime(imMat, center, radius):
     return averageIntensities
     
 def getAverageIntensityInCircle(frame, center, radius):
-    """Returns the average intensity of pixels in a circle defined  by center 
+    """Finds the average intensity in a circle. 
+
+       Returns the average intensity of pixels in a circle defined  by center 
        and radius in the 2D array frame.
+       
+      Arugments:
+         frame: 2D numpy array (x,y).
+         center: (x,y) coordinate pair.
+         radius: circle radius.
+     Returns: 
+         Average intensity in the circle. 
     """
     
     s = shape(frame)
@@ -347,9 +372,9 @@ def getDistancesToFirstPointInTrack(tracks, point):
     Arguments:
         tracks:  A list returned by readInCoordinatesFile. tracks has the format
                  [([x11,x12,x13],[y11,y12,y13]),([x21,x22,x23],[y21,y22,y23])]
-                ???? where particle 1 has position (X11, y11)  in frame 1 and position 
-                 (x12, y12) in frame 2.
-       points: (x,y) coordinate pair.
+                  where particle 1 has position (X11, y11)  in frame 1 and 
+                  position (x12, y12) in frame 2.
+       point: (x,y) coordinate pair.
     Returns:
        The distance between the first point in tracks and point. 
     """
@@ -363,13 +388,208 @@ def getDistancesToFirstPointInTrack(tracks, point):
         text_file.write("y = {0:.2f} x = {1:.2f} d = {2:.2f}\n".format(xs[0], ys[0], d))
     text_file.close()   
     return distances
+
+def subtractULFBackground(ULFBackgrounds, intensities):
+    """ Subtracts the background intensity from ULF intensity. 
+
+    Subtracts the background intensity of a ULF from the same ULF in each
+    frame after photoconversion. ULFBackgrounds is a list of background 
+    intensities. intensities is a list of ULFs lists of ULF intensity trace over 
+    time. Backgrounds and intensity traces at the same index correspond to the
+    same ULF.
+    
+    Arguments: 
+        ULFBackgrounds: List of background intensities [ba, bb, bc,....] where
+                       ba is the background intensity of ulf a, etc. 
+        intensities : List of lists of intensites [[ia1, ia2, ia3, ...],
+                      [ib1, ib2, ib3...],...] where ia1 is the intesity of 
+                      ulf a in frame 1, etc.
+    """
+    
+    nInts = []
+    for intList, ib in zip(intensities, ULFBackgrounds):
+        nIntList = []
+        for i in intList:
+            newInt = i -ib
+            if newInt < 0:
+                newInt = 0
+            nIntList.append(newInt)
+        nInts.append(nIntList)      
+    return nInts
+        
+def getBackgroundULFInensities(backgroundMat, tracks):
+    """ Finds the intensity of each ULF in the background image. 
+
+        Find the intensity of ULFs in the background image using the first 
+        location measured in tracks.
+
+        Arguments: 
+             backgroundMat: numpy array [x,y] of the backgroun image. 
+             tracks: list of track coordinates. 
+       Returns:
+             List of background intensities
+    """
+   
+    # Make the backgroundMat image an [x,y,1] shaped array instead of a [x,y] 
+    # shaped array.
+    backgroundMat = [backgroundMat]
+    backgroundMat = swapaxes(backgroundMat,0,1)
+    backgroundMat = swapaxes(backgroundMat,1,2)
+    
+    # Get first location in each track
+    firstPoints = []
+    for t in tracks:
+        x = t[0][0]
+        y = t[1][0]
+        firstPoints.append(([x],[y]))
+    backgroundInts = getIntensities(backgroundMat, firstPoints)
+    
+    # Convert from a list of lists to a list of numbers. 
+    outInts = []
+    for b in backgroundInts:
+        outInts.append(b[0])
+    return outInts
+
+def bleachCorrectInts(ints, bleachFrac):
+    """ Uses the bleaching fraction calculated from a bleaching movie to correct
+        intensity of each ULF. An alternative to ratio bleach correction. Not 
+        used by Robert *et al.*
+    """
+    correctedInts = []
+    for trace in ints:
+        newTrace = []
+        for i,b in zip(trace, bleachFrac):
+            newTrace.append(float(i) / b);
+        correctedInts.append(newTrace)
+    return correctedInts  
+        
+def findSlopes(intensities, times = None, nPoints = 5):
+    """ Finds the slopes of a list of lists  of intensities. 
+
+       Calculates a linear regression using intensities  as the y-values and time
+       as x-values (or indices if no time is provided) and returns the slope.
+       Only the first nPoints are included in this calculation. Default is to 
+       use the first 5 points. This corresponds to the first minute in a 
+       time-lapse image series acquired at one frame every 15 seconds.
+    
+       Arguments: 
+           intensities: list of list of intensities.
+           time: list of time points.
+           nPoints: only the first nPoins are used. 
+       Returns: 
+           List of slopes. 
+     """ 
+    if times == None:
+        times = range(1, len(intensities[0]) + 1)
+    slopes = []
+    intercepts = []
+    r_values = []
+    for intTrace in intensities:
+        slope, intercept, r_value, p_value, std_err = linregress(times[:nPoints], 
+        intTrace[:nPoints])
+        slopes.append(slope)
+        intercepts.append(intercept)
+        r_values.append(r_value)
+    return(slopes, intercepts, r_values)
+
+def findBleachFraction(mat):
+    """ Calculates the fraction of the movie that has bleached in each frame.
+
+        Not used in published results. 
+
+        Arguments: 
+            mat: numpy array [x,y,t]
+        Returns: 
+           List of fraction bleached in each frame. 
+            
+    """ 
+    bleachMatInts = measureBleachingOverEntireMovie(mat)
+    bleachFrac = []
+    for i in bleachMatInts:
+        p = float(i)/bleachMatInts[0]
+        bleachFrac.append(p)
+    return bleachFrac
+    
+def ratioBleachCorrect(movie):
+    """ Performs ratio bleach correction on an image stack. 
+
+        Corrects for bleaching by normalizing the intensity of each frame to that
+        of the first frame.
+
+       Arguments: 
+           movie: numpy array (x,y,t)
+       Returns:
+           Ratio bleach corrected movie. 
+    """
+    frame0 = movie[:,:,0]
+    minVal = amax(nsmallest(100000,movie.flatten()))
+    m0 = float(mean(frame0) - minVal)
+    s = shape(movie)
+    newMovie = zeros(s)
+    newMovie[:,:,0] = movie[:,:,0] - minVal
+    for t in range(1,s[2]):
+        frame = movie[:,:,t] 
+        frame = frame - minVal
+        m = mean(frame)
+        frame = m0 * (frame / m)
+        newMovie[:,:,t] = frame  
+    movie[movie <= 0] = 0  
+    return newMovie
+
+def removeIntensitiesInConvertedRegion(convertedRadius, intensities, distances):
+    """Removes values from the list intensities and removes corresponding values 
+       from the list distance when distances are less than the converted radius. 
+       This is used to eliminate ULFs in the photoconverted region from further
+       calculations. """
+    
+    newDistances = []
+    newIntensities = []
+    for i in xrange(len(intensities)):
+        if distances[i] > convertedRadius:
+           newDistances.append(distances[i])
+           newIntensities.append(intensities[i])
+    return (newIntensities, newDistances)
+
+def measureBleachingOverEntireMovie(mat):
+    """Returns the average intensity of the each frame."""
+    
+    s = shape(mat)
+    frameInts = []
+    for t in range(s[2]):
+        frameInts.append(mean(mat[:,:,t]))
+    return frameInts
+
+def normalizeIntensities(intensities, convertedIntensity):
+    """Normalized intensities relative to the converted region. 
+      
+       Normalize intensities by dividing each intensity by the intensity in the
+       converted region in the first frame. 
   
+       Arguments: 
+           intensities: List of intensities.
+           convertedIntensity: Intensity in the converted region. 
+      Returns: 
+           List of normalized intensities. 
+    """
+    
+    normedIntensities = deepcopy(intensities)
+    for intList in normedIntensities:
+        for i in range(len(intList)):    
+            intList[i] = intList[i] / float(convertedIntensity)
+    return normedIntensities
+ 
+
+################
+# Plot Results #
+################
 def plotTracks(tracks, redMat, greenMat, fileNumber, centerConversion, \
              radiusConversion, directory, number):
-    """Creates and save a figure that displays the first frame of the red and 
+    """Plots the red and green channels with tracks and conversed region. 
+
+       Creates and save a figure that displays the first frame of the red and 
        green channels with a circle identifying the converted region displayed 
        over the red channel and the ULF tracks displayed over the green channel.
-       """ 
+    """ 
         
     fig1 = figure()
     
@@ -406,9 +626,12 @@ def plotTracks(tracks, redMat, greenMat, fileNumber, centerConversion, \
     close(fig1)
     
 def plotIntensities(directory, number, normedIntensities, ymax = 1.0):
-    """Creates and saves a figure with a plot of all the intensities (y-axis is 
+    """ Plots intensity traces together. 
+
+       Creates and saves a figure with a plot of all the intensities (y-axis is 
        labeled normalized intensities) on the same axis. ymax in the maximum
-       value of the y-axis. """
+       value of the y-axis. 
+    """
     
     fig2 = figure()
     ax = fig2.add_subplot(111)
@@ -424,18 +647,156 @@ def plotIntensities(directory, number, normedIntensities, ymax = 1.0):
     fig2.savefig(join(directory, ('intensities' + str(number) + '.png')))
     close(fig2)
 
+def plotByDistances(intensities, distances, directory, fileNumber = None):
+    """Plots intensities grouped by distance. 
+
+       Generates and saves a plot of intensities versus time (y-axis is 
+       normalized intensities) grouped by distance. The distance ranges 50 to 
+       100 pixels, 100 to 150 pixels, 150 to 200 pixels and 200 plus pixels are
+       each displayed in a separate subplot. 
+    """
+
+    # Group intensities by distance.
+    (range50minus, range50to100, range100to150, range150to200, range200plus)\
+     = groupByDistance(intensities, distances)         
+            
+    # Create figure. 
+    fig = figure()
+    ax = fig.add_subplot(221)
+    for trace in range50to100:
+        ax.plot(trace)
+        ax.set_xlabel('frame')
+        ax.set_ylabel('normalized intensity')
+        ax.set_title('50 to 100 pixels')
+        ax.set_ylim([0,1.2])
+    
+    ax = fig.add_subplot(222)
+    for trace in range100to150:
+        ax.plot(trace)
+        ax.set_xlabel('frame')
+        ax.set_ylabel('normalized intensity')
+        ax.set_title('100 to 150 pixels')
+        ax.set_ylim([0,1.2])
+    
+    ax = fig.add_subplot(223)
+    for trace in range150to200:
+        ax.plot(trace)
+        ax.set_xlabel('frame')
+        ax.set_ylabel('normalized intensity')
+        ax.set_title('150 to 200 pixels')
+        ax.set_ylim([0,1.2])
+    
+    ax = fig.add_subplot(224)
+    for trace in range200plus:
+        ax.plot(trace)
+        ax.set_xlabel('frame')
+        ax.set_ylabel('normalized intensity')
+        ax.set_title('200 plus pixels')
+        ax.set_ylim([0,1.2])
+      
+    tight_layout()
+    
+    # Save figure
+    if fileNumber == None:
+        fileName = join(directory, 'all_intensities_by_distances.png')
+    else:
+        fileName = join(directory, ('intensities_by_distances' + \
+        str(fileNumber) + '.png'))
+    
+    fig.savefig(fileName)
+    close(fig)
+
+def makeBleachingPlot(bleachingFile, nFrames = 5):
+    """ Plots the average intensity in each frame. 
+
+        Creates plots of the average intensity in each frame. Saves the plots 
+        to the same directory as the bleaching movie. 
+        Plots are annotated  with the slope of the line and the percent bleaching.
+        Not used in the work published by Roberts *et al.* but used for trouble 
+        shooting experiments. 
+    """
+    
+    mat = readInTif(bleachingFile)
+    b = measureBleachingOverEntireMovie(mat)
+    # calculate percent bleached over nFrames
+    p = 1 - b[nFrames] / float(b[0])
+    p = p * 100
+    # calcuate slope over nFrames
+    s = findSlopes([b],nPoints=nFrames)[0]
+    
+    directoryName =dirname(bleachingFile)
+    filename = splitext(basename(bleachingFile))[0]
+    
+    fig = figure()
+    ax = fig.add_subplot(111)
+    ax.plot(b,'-o')
+    ax.set_xlabel('Frame')
+    ax.set_ylabel('Average Intensity')
+    ax.set_title(filename)
+    text1 = 'slope over first %d points: %.2f' % (nFrames, s[0])
+    text2 = '%% bleach over first %d points: %.2f' % (nFrames, p)
+    annotate(text1, xy=(0.3, 0.95), xycoords='axes fraction')
+    annotate(text2, xy=(0.3, 0.9),  xycoords='axes fraction')
+    fig.savefig(join(directoryName, filename + '.png'))
+    close(fig)
+    
+
+    outStr =filename + ','
+    for i in b:
+        outStr = outStr + str(i) + ',' 
+    print outStr
+    
+def plotConvertedIntensities(ints, redMovieName, nFrames = 5):
+    """ Plots the intensiteis in the converted regions over time. """
+
+    # calculate percent bleached over nFrames
+    p = 1 - ints[nFrames] / float(ints[0])
+    p = p * 100
+    # calcuate slope over nFrames
+    s = findSlopes([ints],nPoints=nFrames)[0]
+    
+    directoryName =dirname(redMovieName)
+    filename = splitext(basename(redMovieName))[0]
+    
+    fig = figure()
+    ax = fig.add_subplot(111)
+    ax.plot(ints,'r-o')
+    ax.set_xlabel('Frame')
+    ax.set_ylabel('Average Intensity in Converted Region')
+    ax.set_title(filename)
+    text1 = 'slope over first %d points: %.2f' % (nFrames, s[0])
+    text2 = '%% change over first %d points: %.2f' % (nFrames, p)
+    annotate(text1, xy=(0.3, 0.95), xycoords='axes fraction')
+    annotate(text2, xy=(0.3, 0.9),  xycoords='axes fraction')
+    fig.savefig(join(directoryName, filename + 'bleaching region.png'))
+    close(fig)
+
+
+################################
+#  Write results to excel file #
+################################
 def writeDataToRow(worksheet, wbRow, wbCol, data):
-    """Writes values in the list data to a row wbRow in worksheet (an Excel file 
-       worksheet)starting with column wbCol. Worksheet is created by 
-       xlsxwriter."""
+    """Writes values to a row in an Excel file.
+
+       Arguments: 
+           worksheet: an Excel worksheet created by xlswriter
+           wbRow: index of the row
+           wbCol: index of the column
+           data: list of numbers
+     """
     
     for n in data:
         worksheet.write(wbRow, wbCol, n)
         wbCol +=1
         
 def writeVersionInfoToFile(worksheet,wbRow):
-    """If there is git version information available, write it to row wbRow in 
-       worksheet. Worksheet is created by xlsxwriter."""
+    """Writes git sha to an Excel file if available. 
+
+       Arguments: 
+           worksheet: Excel worksheet
+           wbRow: row index
+           wbCol: column index
+    """
     
     try:
         homeDir = dirname(realpath(__file__))
@@ -449,7 +810,12 @@ def writeVersionInfoToFile(worksheet,wbRow):
     
 def writeDataToFile(worksheet, fileNames, data):
     """Writes calculated parameters in data to the Excel worksheet. 
-       Worksheet is created by xlsxwriter."""
+
+       Arguments:
+           worksheet: Excel worksheet.
+           fileName: Dictionary of files names. 
+           data: Dictionary of data.
+    """
     
     # Write version information 
     wbRow = 0
@@ -586,12 +952,15 @@ def writeDataToFile(worksheet, fileNames, data):
         wbRow += 1
 
 def writeAllDataToFile(workbook, allDistances, allSlopes):
-    """Creates an Excel file with allDistances and allSlopes. Slopes and 
-       distances are grouped by range of distance. Each range is written to a 
-       separate sheet within the file. Used for recording batch data. """
+    """Records all data from bactch processing to an excel file. 
+       
+       Arguments: 
+          workbook: Excel workbook.
+          allDistances: list of distances.
+          allSlopes: List of corresponding slopes. 
+    """
      
     # Group slopes and distnaces by distance.  
-
     (range50minus, range50to100, range100to150, range150to200, range200plus) \
     = groupByDistance(allSlopes, allDistances)                             
     
@@ -633,46 +1002,21 @@ def writeAllDataToFile(workbook, allDistances, allSlopes):
         
     workbook.close() 
     
-def bleachCorrectInts(ints, bleachFrac):
-    """Uses the bleaching fraction calculated from a bleaching movie to correct
-       intensity of each ULF. An alternative to ratio bleach correction. Not 
-       used by Robert *et al.*"""
-    correctedInts = []
-    for trace in ints:
-        newTrace = []
-        for i,b in zip(trace, bleachFrac):
-            newTrace.append(float(i) / b);
-        correctedInts.append(newTrace)
-    return correctedInts  
-        
-def findSlopes(intensities, times = None, nPoints = 5):
-    """Calculates a linear regression using intensities  as the y-values and time
-       as x-values (or indices if no time is provided) and returns the slope.
-       Only the first nPoints are included in this calculation. Default is to 
-       use the first 5 points. This corresponds to the first minute in a 
-       time-lapse image series acquired at one frame every 15 seconds.""" 
-    if times == None:
-        times = range(1, len(intensities[0]) + 1)
-    slopes = []
-    intercepts = []
-    r_values = []
-    for intTrace in intensities:
-        slope, intercept, r_value, p_value, std_err = linregress(times[:nPoints], 
-        intTrace[:nPoints])
-        slopes.append(slope)
-        intercepts.append(intercept)
-        r_values.append(r_value)
-    return(slopes, intercepts, r_values)
-    
+
+##############
+# Exceptions #
+##############
 class _fileFormatError(Exception):
-    """Exception raised when a file does not have the correct format."""
+    """Exception raised when a file does not have the correct format.
+    """
     def __init__(self, fileName):
         self.fileName = fileName
     def __str__(self):
         return repr(self.fileName)
     
 class  _missingFileError(Exception):
-    """Exception raised when a file does not exist. Returns the file name."""
+    """Exception raised when a file does not exist. Returns the file name.
+    """
      
     def __init__(self, fileName):
         self.fileName = fileName
@@ -680,46 +1024,27 @@ class  _missingFileError(Exception):
         return repr(self.fileName)
         
 class _imageShapeDiscrepencyError(Exception):
-    """Exception raised when two images are not the same shape. """
+    """Exception raised when two images are not the same shape.
+    """
     def __init__(self, fileOne, fileTwo):
         self.files = fileOne + ' and ' + fileTwo
     def __str__(self):
         return repr(self.files)
-        
-def findBleachFraction(mat):
-    """Calculates the fraction of the movie that has bleached in each frame.
-    """ 
-    bleachMatInts = measureBleachingOverEntireMovie(mat)
-    bleachFrac = []
-    for i in bleachMatInts:
-        p = float(i)/bleachMatInts[0]
-        bleachFrac.append(p)
-    return bleachFrac
-    
-def ratioBleachCorrect(movie):
-    """Corrects for bleaching by normalizing the intensity of each frame to that
-       of the first frame.
-    """
-    frame0 = movie[:,:,0]
-    minVal = amax(nsmallest(100000,movie.flatten()))
-    m0 = float(mean(frame0) - minVal)
-    s = shape(movie)
-    newMovie = zeros(s)
-    newMovie[:,:,0] = movie[:,:,0] - minVal
-    for t in range(1,s[2]):
-        frame = movie[:,:,t] 
-        frame = frame - minVal
-        m = mean(frame)
-        frame = m0 * (frame / m)
-        newMovie[:,:,t] = frame  
-    movie[movie <= 0] = 0  
-    return newMovie
-    
+
+
+##################
+# Batch Analysis #
+##################
 def openFilesInSet(redImageName, greenImageName):
-    """ Opens the red and green files in a data set. Returns two lists of 
-    matrices.
+    """ Opens the red and green files in a data set.
+     
+        Arguments: 
+            redImageName: Name of the red image.
+            greenImageName: Name of the green image.
+        Returns: 
+            Tuple of numpy arrays (red, green)
     """
-    data = {} #
+    data = {}
     try:
         redMat =  readInTif(redImageName)
     except IOError:
@@ -732,11 +1057,13 @@ def openFilesInSet(redImageName, greenImageName):
         raise _missingFileError(greenImageName) 
         return data
     return (redMat, greenMat)
-        
+
 def analyzeDataSet(CoordFileName, redImageName, greenImageName, resultsName, 
                 convertedCenter, convertedRadius, fileNumber, dataDirectory,
                 backgroundName = None, bleachingFileName = None):
-    """Analyzes one dataset including a red image series, a green image series, 
+    """Analyze one data set.  
+
+       Analyzes one dataset including a red image series, a green image series, 
        a coordinates file, and a background image file. This is where the 5 step 
        workflow for ULF intensity analysis is implemented.
     """
@@ -861,7 +1188,8 @@ def analyzeDataSet(CoordFileName, redImageName, greenImageName, resultsName,
     return (data)
     
 def analyzeRedAndGreenSet(dataSet):
-    """TODO What does this do?"""
+    """
+    """
     
     CoordFileName = dataSet['cordName']
     redImageName = dataSet['redName']
@@ -952,139 +1280,7 @@ def analyzeRedAndGreenSet(dataSet):
     workbook.close() 
     
     return ({})
-
-def subtractULFBackground(ULFBackgrounds, intensities):
-    """Subtracts the background intensity of a ULF from the same ULF in each
-    frame after photoconversion. ULFBackgrounds is a list of background 
-    intensities. intensities is a list of ULFs lists of ULF intensity trace over 
-    time. Backgrounds and intensity traces at the same index correspond to the
-    same ULF."""
-    
-    nInts = []
-    for intList, ib in zip(intensities, ULFBackgrounds):
-        nIntList = []
-        for i in intList:
-            newInt = i -ib
-            if newInt < 0:
-                newInt = 0
-            nIntList.append(newInt)
-        nInts.append(nIntList)      
-    return nInts
-        
-def getBackgroundULFInensities(backgroundMat, tracks):
-    """Find the intensity of ULFs in the background image using the first 
-      location measured in tracks."""
-   
-    # Make the backgroundMat image an [x,y,1] shaped array instead of a [x,y] 
-    # shaped array.
-    backgroundMat = [backgroundMat]
-    backgroundMat = swapaxes(backgroundMat,0,1)
-    backgroundMat = swapaxes(backgroundMat,1,2)
-    
-    # Get first location in each track
-    firstPoints = []
-    for t in tracks:
-        x = t[0][0]
-        y = t[1][0]
-        firstPoints.append(([x],[y]))
-    backgroundInts = getIntensities(backgroundMat, firstPoints)
-    
-    # Convert from a list of lists to a list of numbers. 
-    outInts = []
-    for b in backgroundInts:
-        outInts.append(b[0])
-    return outInts
-    
-def normalizeIntensities(intensities, convertedIntensity):
-    """Normalize intensities by dividing each intensity by the intensity in the
-       converted region in the first frame. """
-    
-    normedIntensities = deepcopy(intensities)
-    for intList in normedIntensities:
-        for i in range(len(intList)):    
-            intList[i] = intList[i] / float(convertedIntensity)
-    return normedIntensities
-            
-              
-def removeIntensitiesInConvertedRegion(convertedRadius, intensities, distances):
-    """Removes values from the list intensities and removes corresponding values 
-       from the list distance when distances are less than the converted radius. 
-       This is used to eliminate ULFs in the photoconverted region from further
-       calculations. """
-    
-    newDistances = []
-    newIntensities = []
-    for i in xrange(len(intensities)):
-        if distances[i] > convertedRadius:
-           newDistances.append(distances[i])
-           newIntensities.append(intensities[i])
-    return (newIntensities, newDistances)
-    
-def measureBleachingOverEntireMovie(mat):
-    """Returns the average intensity of the each frame."""
-    
-    s = shape(mat)
-    frameInts = []
-    for t in range(s[2]):
-        frameInts.append(mean(mat[:,:,t]))
-    return frameInts
-    
-def plotByDistances(intensities, distances, directory, fileNumber = None):
-    """Generates and saves a plot of intensities versus time (y-axis is 
-       normalized intensities) grouped by distance. The distance ranges 50 to 
-       100 pixels, 100 to 150 pixels, 150 to 200 pixels and 200 plus pixels are
-       each displayed in a separate subplot. """
-
-    # Group intensities by distance.
-    (range50minus, range50to100, range100to150, range150to200, range200plus)\
-     = groupByDistance(intensities, distances)         
-            
-    # Create figure. 
-    fig = figure()
-    ax = fig.add_subplot(221)
-    for trace in range50to100:
-        ax.plot(trace)
-        ax.set_xlabel('frame')
-        ax.set_ylabel('normalized intensity')
-        ax.set_title('50 to 100 pixels')
-        ax.set_ylim([0,1.2])
-    
-    ax = fig.add_subplot(222)
-    for trace in range100to150:
-        ax.plot(trace)
-        ax.set_xlabel('frame')
-        ax.set_ylabel('normalized intensity')
-        ax.set_title('100 to 150 pixels')
-        ax.set_ylim([0,1.2])
-    
-    ax = fig.add_subplot(223)
-    for trace in range150to200:
-        ax.plot(trace)
-        ax.set_xlabel('frame')
-        ax.set_ylabel('normalized intensity')
-        ax.set_title('150 to 200 pixels')
-        ax.set_ylim([0,1.2])
-    
-    ax = fig.add_subplot(224)
-    for trace in range200plus:
-        ax.plot(trace)
-        ax.set_xlabel('frame')
-        ax.set_ylabel('normalized intensity')
-        ax.set_title('200 plus pixels')
-        ax.set_ylim([0,1.2])
-      
-    tight_layout()
-    
-    # Save figure
-    if fileNumber == None:
-        fileName = join(directory, 'all_intensities_by_distances.png')
-    else:
-        fileName = join(directory, ('intensities_by_distances' + \
-        str(fileNumber) + '.png'))
-    
-    fig.savefig(fileName)
-    close(fig)
-    
+         
 def groupByDistance(vals, distances):
     """ Groups ULF intensity traces by distance to the center of the converted 
         region."""
@@ -1107,7 +1303,6 @@ def groupByDistance(vals, distances):
             range200plus.append(intVal)
     return (range50minus, range50to100, range100to150, range150to200, 
     range200plus)
-    
     
 def analyzeFilesTogether(arguments, backgroundNames = None):
     """Analyzes multiple data sets together. Calls analyzeDataSet for each 
@@ -1184,7 +1379,8 @@ def analyzeFilesTogether(arguments, backgroundNames = None):
         workbook.close()
         
 def analyzeRedAndGreen(arguments):
-    """ TODO What does this do??? """
+    """
+    """
     
     coordFileNames = arguments['coordFileNames']
     redImageNames = arguments['redImageNames']
@@ -1260,7 +1456,6 @@ def analyzeRedAndGreen(arguments):
         fileNumber = None)
         workbook.close()
     """
-        
         
 def runBatch(fileNumbers, directory, rootName, covertedCenter,\
             convertedRadius = 50, background = True,\
@@ -1366,66 +1561,4 @@ def runBatchRedAndGreen(fileNumbers, directory, rootName, covertedCenter,\
     arguments['allBackgroundsGreen'] = allBackgroundsGreen
         
     analyzeRedAndGreen(arguments)
-        
-def makeBleachingPlot(bleachingFile, nFrames = 5):
-    """ Creates plots of the average intensity in each frame. Saves the plots 
-        to the same directory as the bleaching movie. 
-        Plots are annotated  with the slope of the line and the percent bleaching.
-        Not used in the work published by Roberts *et al.* but used for trouble 
-        shooting experiments. 
-        """
     
-    mat = readInTif(bleachingFile)
-    b = measureBleachingOverEntireMovie(mat)
-    # calculate percent bleached over nFrames
-    p = 1 - b[nFrames] / float(b[0])
-    p = p * 100
-    # calcuate slope over nFrames
-    s = findSlopes([b],nPoints=nFrames)[0]
-    
-    directoryName =dirname(bleachingFile)
-    filename = splitext(basename(bleachingFile))[0]
-    
-    fig = figure()
-    ax = fig.add_subplot(111)
-    ax.plot(b,'-o')
-    ax.set_xlabel('Frame')
-    ax.set_ylabel('Average Intensity')
-    ax.set_title(filename)
-    text1 = 'slope over first %d points: %.2f' % (nFrames, s[0])
-    text2 = '%% bleach over first %d points: %.2f' % (nFrames, p)
-    annotate(text1, xy=(0.3, 0.95), xycoords='axes fraction')
-    annotate(text2, xy=(0.3, 0.9),  xycoords='axes fraction')
-    fig.savefig(join(directoryName, filename + '.png'))
-    close(fig)
-    
-
-    outStr =filename + ','
-    for i in b:
-        outStr = outStr + str(i) + ',' 
-    print outStr
-    
-def plotConvertedIntensities(ints, redMovieName, nFrames = 5):
-    """ Plots the intensiteis in the converted regions over time. """
-
-    # calculate percent bleached over nFrames
-    p = 1 - ints[nFrames] / float(ints[0])
-    p = p * 100
-    # calcuate slope over nFrames
-    s = findSlopes([ints],nPoints=nFrames)[0]
-    
-    directoryName =dirname(redMovieName)
-    filename = splitext(basename(redMovieName))[0]
-    
-    fig = figure()
-    ax = fig.add_subplot(111)
-    ax.plot(ints,'r-o')
-    ax.set_xlabel('Frame')
-    ax.set_ylabel('Average Intensity in Converted Region')
-    ax.set_title(filename)
-    text1 = 'slope over first %d points: %.2f' % (nFrames, s[0])
-    text2 = '%% change over first %d points: %.2f' % (nFrames, p)
-    annotate(text1, xy=(0.3, 0.95), xycoords='axes fraction')
-    annotate(text2, xy=(0.3, 0.9),  xycoords='axes fraction')
-    fig.savefig(join(directoryName, filename + 'bleaching region.png'))
-    close(fig)

@@ -8,4 +8,5 @@
 # Output of data analysis #
 ###########################
 *.xlsx
+*.csv
 *.png
