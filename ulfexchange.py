@@ -171,7 +171,7 @@ def readInTif(fileName):
     
     Arguments:
        fileName: Full path to tiff file.
-    Return:
+    Returns:
        Numpy array.
     """
     tif = TiffFile(fileName)
@@ -259,8 +259,8 @@ def distance(p1, p2):
     """Calculates the distance between two points.
 
        Arguments: 
-           p1: point (x1, y1)
-           p2: point (x2, y2)
+           p1: Point (x1, y1).
+           p2: Point (x2, y2).
     """
     x1 = p1[0]
     y1 = p1[1]
@@ -309,7 +309,7 @@ def getAverageIntensityInCircleOverTime(imMat, center, radius):
     Arguments:
         inMat: 3D numpy array (x,y,time).
         center: (x, y) coordinate pair.
-        radius: circle radius.
+        radius: Circle radius.
     Returns:
         List of intensities in circle over time. 
     """
@@ -335,7 +335,7 @@ def getAverageIntensityInCircle(frame, center, radius):
       Arguments:
          frame: 2D numpy array (x,y).
          center: (x,y) coordinate pair.
-         radius: circle radius.
+         radius: Circle radius.
      Returns: 
          Average intensity in the circle. 
     """
@@ -400,7 +400,7 @@ def subtractULFBackground(ULFBackgrounds, intensities):
     
     Arguments: 
         ULFBackgrounds: List of background intensities [ba, bb, bc,....] where
-                       ba is the background intensity of ulf a, etc. 
+                        ba is the background intensity of ulf a, etc. 
         intensities : List of lists of intensities [[ia1, ia2, ia3, ...],
                       [ib1, ib2, ib3...],...] where ia1 is the intensity of 
                       ulf a in frame 1, etc.
@@ -424,7 +424,7 @@ def getBackgroundULFInensities(backgroundMat, tracks):
         location measured in tracks.
 
         Arguments: 
-             backgroundMat: numpy array [x,y] of the background image. 
+             backgroundMat: Numpy array [x,y] of the background image. 
              tracks: list of track coordinates. 
        Returns:
              List of background intensities
@@ -517,7 +517,7 @@ def ratioBleachCorrect(movie):
         of the first frame.
 
        Arguments: 
-           movie: numpy array (x,y,t)
+           movie: Numpy array (x,y,t)
        Returns:
            Ratio bleach corrected movie. 
     """
@@ -759,7 +759,8 @@ def makeBleachingPlot(bleachingFile, nFrames = 5):
     print outStr
     
 def plotConvertedIntensities(ints, redMovieName, nFrames = 5):
-    """ Plots the intensities in the converted regions over time. """
+    """ Plots the intensities in the converted regions over time. 
+    """
 
     # calculate percent bleached over nFrames
     p = 1 - ints[nFrames] / float(ints[0])
@@ -792,9 +793,9 @@ def writeDataToRow(worksheet, wbRow, wbCol, data):
 
        Arguments: 
            worksheet: an Excel worksheet created by xlswriter
-           wbRow: index of the row
-           wbCol: index of the column
-           data: list of numbers
+           wbRow: Index of the row.
+           wbCol: Index of the column.
+           data: List of numbers.
      """
     
     for n in data:
@@ -806,8 +807,8 @@ def writeVersionInfoToFile(worksheet,wbRow):
 
        Arguments: 
            worksheet: Excel worksheet
-           wbRow: row index
-           wbCol: column index
+           wbRow: Row index.
+           wbCol: Column index.
     """
     
     try:
@@ -1054,7 +1055,7 @@ def openFilesInSet(redImageName, greenImageName):
             redImageName: Name of the red image.
             greenImageName: Name of the green image.
         Returns: 
-            Tuple of numpy arrays (red, green)
+            Tuple of numpy arrays (red, green).
     """
     data = {}
     try:
@@ -1200,7 +1201,7 @@ def analyzeDataSet(CoordFileName, redImageName, greenImageName, resultsName,
     return (data)
     
 def analyzeRedAndGreenSet(dataSet):
-    """
+    """ Red and Green channel comparison for multiple data sets. 
     """
     
     CoordFileName = dataSet['cordName']
@@ -1352,8 +1353,7 @@ def analyzeFilesTogether(arguments, backgroundNames = None):
     normedIntensities = []
     normSlopes = []
     allDistances = []
-
-      
+     
     for cordName, redName, greenName, bgName, FileNumber, resultsName in \
         zip(coordFileNames, redImageNames, greenImageNames, backgroundNames,\
         FileNumbers, ResultsNames): 
@@ -1400,7 +1400,7 @@ def analyzeFilesTogether(arguments, backgroundNames = None):
         workbook.close()
         
 def analyzeRedAndGreen(arguments):
-    """
+    """ Red and Green channel comparison for multiple data sets. 
     """
     
     coordFileNames = arguments['coordFileNames']
@@ -1539,6 +1539,8 @@ def runBatch(fileNumbers, directory, rootName, covertedCenter,\
 def runBatchRedAndGreen(fileNumbers, directory, rootName, covertedCenter,\
             convertedRadius):        
     """ Red and Green channel comparison. 
+
+        Creates a plot and Excel file to show bleaching in red and green channels.
             
         1. rootname + red + number + .tif
         2. rootname + green + number + .tif
