@@ -281,7 +281,7 @@ def getIntensities(mat, tracks, radius = 6):
              (x12, y12) in frame 2. 
         radius: Radius of the circle of the circle around each location. 
     Returns:
-         List of lists of intensities. Each sublist correspnds to a location 
+         List of lists of intensities. Each sublist corresponds to a location 
          in tracks. Sublists are in the same order as the coordinates in tracks. 
      """
     s = shape(mat)
@@ -332,7 +332,7 @@ def getAverageIntensityInCircle(frame, center, radius):
        Returns the average intensity of pixels in a circle defined  by center 
        and radius in the 2D array frame.
        
-      Arugments:
+      Arguments:
          frame: 2D numpy array (x,y).
          center: (x,y) coordinate pair.
          radius: circle radius.
@@ -359,7 +359,7 @@ def getAverageIntensityInCircle(frame, center, radius):
                                         # x->c, y->r
             # If the point is in the circle add it to included intensities
             if d <= radius: 
-                # Check if the coordinates are withing the frame. 
+                # Check if the coordinates are within the frame. 
                 if ((r < s[0]) and (r >= 0)) and ((c < s[1]) and (c >= 0)):
                     #Access matrix with rowsXcolums
                     includedIntensities.append(frame[r,c]) 
@@ -401,8 +401,8 @@ def subtractULFBackground(ULFBackgrounds, intensities):
     Arguments: 
         ULFBackgrounds: List of background intensities [ba, bb, bc,....] where
                        ba is the background intensity of ulf a, etc. 
-        intensities : List of lists of intensites [[ia1, ia2, ia3, ...],
-                      [ib1, ib2, ib3...],...] where ia1 is the intesity of 
+        intensities : List of lists of intensities [[ia1, ia2, ia3, ...],
+                      [ib1, ib2, ib3...],...] where ia1 is the intensity of 
                       ulf a in frame 1, etc.
     """
     
@@ -424,7 +424,7 @@ def getBackgroundULFInensities(backgroundMat, tracks):
         location measured in tracks.
 
         Arguments: 
-             backgroundMat: numpy array [x,y] of the backgroun image. 
+             backgroundMat: numpy array [x,y] of the background image. 
              tracks: list of track coordinates. 
        Returns:
              List of background intensities
@@ -475,7 +475,7 @@ def findSlopes(intensities, times = None, nPoints = 5):
        Arguments: 
            intensities: list of list of intensities.
            time: list of time points.
-           nPoints: only the first nPoins are used. 
+           nPoints: only the first nPoints are used. 
        Returns: 
            List of slopes. 
      """ 
@@ -537,10 +537,21 @@ def ratioBleachCorrect(movie):
     return newMovie
 
 def removeIntensitiesInConvertedRegion(convertedRadius, intensities, distances):
-    """Removes values from the list intensities and removes corresponding values 
+    """Remove ULF intensities that are located in the converted region. 
+
+       Removes values from the list intensities and removes corresponding values 
        from the list distance when distances are less than the converted radius. 
        This is used to eliminate ULFs in the photoconverted region from further
-       calculations. """
+       calculations. 
+
+       Arguments: 
+           convertedRadius: Radius of the converted region. 
+           intensities: List of list of intensities. 
+           distances: List of distances. 
+       Returns: 
+           List of lists of intensities with intensities in the converted region
+           removed and a list of corresponding distances. 
+     """
     
     newDistances = []
     newIntensities = []
@@ -551,7 +562,8 @@ def removeIntensitiesInConvertedRegion(convertedRadius, intensities, distances):
     return (newIntensities, newDistances)
 
 def measureBleachingOverEntireMovie(mat):
-    """Returns the average intensity of the each frame."""
+    """Returns the average intensity of the each frame.
+    """
     
     s = shape(mat)
     frameInts = []
@@ -721,7 +733,7 @@ def makeBleachingPlot(bleachingFile, nFrames = 5):
     # calculate percent bleached over nFrames
     p = 1 - b[nFrames] / float(b[0])
     p = p * 100
-    # calcuate slope over nFrames
+    # calculate slope over nFrames
     s = findSlopes([b],nPoints=nFrames)[0]
     
     directoryName =dirname(bleachingFile)
@@ -747,7 +759,7 @@ def makeBleachingPlot(bleachingFile, nFrames = 5):
     print outStr
     
 def plotConvertedIntensities(ints, redMovieName, nFrames = 5):
-    """ Plots the intensiteis in the converted regions over time. """
+    """ Plots the intensities in the converted regions over time. """
 
     # calculate percent bleached over nFrames
     p = 1 - ints[nFrames] / float(ints[0])
@@ -863,7 +875,7 @@ def writeDataToFile(worksheet, fileNames, data):
     wbRow += 1
     
     # Write converted region average background intensity to file.
-    worksheet.write(wbRow, 0, 'Avearge intensity in converted region in \
+    worksheet.write(wbRow, 0, 'Average intensity in converted region in \
                                background image')
     worksheet.write(wbRow,1, data['backgroundInConvertedRegion'])
     wbRow += 1
@@ -952,7 +964,7 @@ def writeDataToFile(worksheet, fileNames, data):
         wbRow += 1
 
 def writeAllDataToFile(workbook, allDistances, allSlopes):
-    """Records all data from bactch processing to an excel file. 
+    """Records all data from batch processing to an excel file. 
        
        Arguments: 
           workbook: Excel workbook.
@@ -960,7 +972,7 @@ def writeAllDataToFile(workbook, allDistances, allSlopes):
           allSlopes: List of corresponding slopes. 
     """
      
-    # Group slopes and distnaces by distance.  
+    # Group slopes and distances by distance.  
     (range50minus, range50to100, range100to150, range150to200, range200plus) \
     = groupByDistance(allSlopes, allDistances)                             
     
@@ -1095,7 +1107,7 @@ def analyzeDataSet(CoordFileName, redImageName, greenImageName, resultsName,
     # Get the red channel intesity of each ULF in each frame. ULF locations are 
     # defined  by tracks (created by readInCoordinatesFile) 
     intensities = getIntensities(redMat, tracks)  
-    print(intensities[0][0:10])      
+    # print(intensities[0][0:10])      
     
     # Get the distnaces between the center of the converted region and the
     # first point in each track. 
@@ -1108,7 +1120,7 @@ def analyzeDataSet(CoordFileName, redImageName, greenImageName, resultsName,
     plotConvertedIntensities(convertedIntensities,redImageName)
     
     # WORKFLOW STEP 3: Background subtraction
-    #Background subtaction
+    #Background subtraction 
     if backgroundName!= None:
         try: 
             backgroundMat = readInTif(backgroundName)  
@@ -1247,9 +1259,9 @@ def analyzeRedAndGreenSet(dataSet):
     nIntsRed = subtractULFBackground(backgroundULFIntsRed, RedIntensities)
     nIntsGreen = subtractULFBackground(backgroundULFIntsGreen, GreenIntensities)
     
-    # No normealization for now! 2/18/15
+    # No normalization for now! 2/18/15
 
-    # WORKFLOW STEP 5: Visulaize and report results   
+    # WORKFLOW STEP 5: Visualize and report results   
     # Get slopes of raw and normalized intensities. 
     (slopesRed, interceptsRed, r_valuesRed) = findSlopes(nIntsRed)
     (slopesGreen, interceptsGree, r_valuesGreen) = findSlopes(nIntsGreen)
@@ -1282,8 +1294,16 @@ def analyzeRedAndGreenSet(dataSet):
     return ({})
          
 def groupByDistance(vals, distances):
-    """ Groups ULF intensity traces by distance to the center of the converted 
-        region."""
+    """ Group ULF intensity traces by distance from the converted region.
+
+        Arguments:
+            vals: List of list of intensities.
+            distances: List of distances.
+       Returns: 
+           Tuple of 5 lists corresponding to intensity traces in the 
+           following ranges: 0 to 50, 50 to 100, 100 to 150, 150 to 200,
+           greater then 200.  
+    """
         
     range50minus = []
     range50to100 = []
@@ -1306,7 +1326,8 @@ def groupByDistance(vals, distances):
     
 def analyzeFilesTogether(arguments, backgroundNames = None):
     """Analyzes multiple data sets together. Calls analyzeDataSet for each 
-     data set and also groups results from all data sets. """
+       data set and also groups results from all data sets. 
+    """
     
     coordFileNames = arguments['coordFileNames']
     redImageNames = arguments['redImageNames']
