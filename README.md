@@ -7,4 +7,6 @@ precursors exchange subunits in an ATP-dependent manner" Amélie Robert, Molly
 Rossow, Caroline Hookway, Stephen A. Adams and Vladimir I. Gelfand (Accepted to 
 PNAS June 2015.)
 
-See the documentation for details and instructuions: http://ulf-exchange.readthedocs.org/en/latest/index.html 
+[“Vimentin Filament Precursors Exchange Subunits in an ATP-Dependent Manner.” Amélie Robert, Molly J Rossow, Caroline Hookway, Stephen A Adam, and Vladimir I Gelfand. 2015. Proceedings of the National Academy of Sciences 112 (27) (July 7).](http://www.pnas.org/content/112/27/E3505.abstract)
+
+See the [documentation](http://ulf-exchange.readthedocs.org/en/latest/index.html) for details and instructuions.
