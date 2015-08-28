@@ -76,7 +76,7 @@ For example if rootname is control the following files are an allowed data set:
 1     Red channel     control_red01.tif
 2     Green channel   control_green01.tif
 3     Red background  control_before01.tif
-4     Coordinates     control_01.tif
+4     Coordinates     control_01.txt
 ===== =============== ======================
 
 Outputs
