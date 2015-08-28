@@ -478,7 +478,7 @@ def findSlopes(intensities, times = None, nPoints = 5):
            nPoints: only the first nPoints are used. 
        Returns: 
            List of slopes. 
-     """ 
+g     """ 
     if times == None:
         times = range(1, len(intensities[0]) + 1)
     slopes = []
@@ -1260,8 +1260,6 @@ def analyzeRedAndGreenSet(dataSet):
     nIntsRed = subtractULFBackground(backgroundULFIntsRed, RedIntensities)
     nIntsGreen = subtractULFBackground(backgroundULFIntsGreen, GreenIntensities)
     
-    # No normalization for now! 2/18/15
-
     # WORKFLOW STEP 5: Visualize and report results   
     # Get slopes of raw and normalized intensities. 
     (slopesRed, interceptsRed, r_valuesRed) = findSlopes(nIntsRed)
